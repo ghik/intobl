@@ -24,9 +24,12 @@ genome.evaluator.set(eval_func)
 ga = pyevolve.GSimpleGA.GSimpleGA(genome)
 
 class CustomizedCSVAdapter(CSVAdapter):
+    def __init__(self,**args):
+        CSVAdapter.__init__(self,**args)
+        self.i = 0
     def insert(self,ga):
-        #here output to CSV can be customized
-        CSVAdapter.insert(self,ga)
+        self.fHandle.write(str(self.i)+","+str(eval_func(ga.bestIndividual()))+"\n")
+        self.i += 1
 
 dbadapter = CustomizedCSVAdapter(filename="results.csv",identify="test_run",frequency=1,reset=True)
 ga.setDBAdapter(dbadapter)
