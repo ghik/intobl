@@ -1,6 +1,7 @@
 import pyevolve
 import pyevolve.G1DBinaryString
 import pyevolve.GSimpleGA
+from pyevolve.DBAdapters import DBFileCSV as CSVAdapter
 
 import numpy
 
@@ -22,7 +23,12 @@ genome = pyevolve.G1DBinaryString.G1DBinaryString(64)
 genome.evaluator.set(eval_func)
 ga = pyevolve.GSimpleGA.GSimpleGA(genome)
 
-dbadapter = pyevolve.DBAdapters.DBFileCSV(filename="results.csv",identify="test_run",frequency=1,reset=True)
+class CustomizedCSVAdapter(CSVAdapter):
+    def insert(self,ga):
+        #here output to CSV can be customized
+        CSVAdapter.insert(self,ga)
+
+dbadapter = CustomizedCSVAdapter(filename="results.csv",identify="test_run",frequency=1,reset=True)
 ga.setDBAdapter(dbadapter)
 
 ga.evolve(freq_stats=1)
