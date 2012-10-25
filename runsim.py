@@ -4,19 +4,21 @@ import sys, os, subprocess, csv
 
 devnull = open('/dev/null','w')
 
-outname=sys.argv[1]
-trials=30
+inname=sys.argv[1]
+outname=sys.argv[2]
+trials=int(sys.argv[3])
+
 datadir = 'data/'+outname
 try:
     os.mkdir(datadir)
 except OSError:
-    print 'Data folder with name "{}" already exists'.format(outname)
-    #os.exit(1)
+    print 'Dataset with name "{}" already exists'.format(outname)
+    sys.exit(1)
     
 runs = []
 for i in range(trials):
     fname = datadir+'/result'+str(i)+'.csv'
-    subprocess.check_call(['snippets/genetic.py', fname], stdout=devnull)
+    subprocess.check_call([inname, fname], stdout=devnull)
 
     with open(fname) as f:
         data = csv.reader(f)

@@ -38,7 +38,7 @@ class CustomizedCSVAdapter(CSVAdapter):
 
 dbadapter = CustomizedCSVAdapter(filename=outfile,identify="test_run",frequency=1,reset=True)
 ga.setDBAdapter(dbadapter)
-
+ga.setGenerations(30)
 ga.evolve(freq_stats=1)
 print parse_to_point(ga.bestIndividual())
 
