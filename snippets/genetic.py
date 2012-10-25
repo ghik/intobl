@@ -1,9 +1,14 @@
+#!/usr/bin/env python
+
 import pyevolve
 import pyevolve.G1DBinaryString
 import pyevolve.GSimpleGA
 from pyevolve.DBAdapters import DBFileCSV as CSVAdapter
 
 import numpy
+import sys
+
+outfile = sys.argv[1]
 
 def rastrigin(x):
     n = len(x)
@@ -31,7 +36,7 @@ class CustomizedCSVAdapter(CSVAdapter):
         self.fHandle.write(str(self.i)+","+str(eval_func(ga.bestIndividual()))+"\n")
         self.i += 1
 
-dbadapter = CustomizedCSVAdapter(filename="results.csv",identify="test_run",frequency=1,reset=True)
+dbadapter = CustomizedCSVAdapter(filename=outfile,identify="test_run",frequency=1,reset=True)
 ga.setDBAdapter(dbadapter)
 
 ga.evolve(freq_stats=1)
