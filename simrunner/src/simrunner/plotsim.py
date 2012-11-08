@@ -5,13 +5,10 @@ Created on 07-11-2012
 @author: admchr
 '''
 
-import glob, sys, subprocess, shutil
+import glob
+import subprocess
 
-outname=sys.argv[1]
-
-datadir = 'data/'+outname
-
-gnuplot_data = """
+gnuplot_data_template = """
 
 set terminal png
 set title "{title}"
@@ -25,21 +22,20 @@ plot "summary.csv" w errorbars t "average result" {detail_plots}
 
 """
 
-num = len(glob.glob(datadir+'/result*.csv'))
-
-gnuplot_add=''
-for i in range(num):
-    gnuplot_add += ', "result{}.csv" t "" w l lc "gray"'.format(i)
-
-gnuplot_data = gnuplot_data.format(detail_plots=gnuplot_add, title='fitness for dataset '+outname)
-
-stdinname = datadir + '/plot.gpl'
-
-with open(stdinname, 'w') as f:
-    f.write(gnuplot_data)
-
-
-with open(stdinname) as stdinf:
-    subprocess.check_call(['gnuplot'], stdin=stdinf, cwd=datadir)
-
-shutil.copyfile(datadir+'/graph.png', 'graph.png')
+def plot_results(datadir):
+    num = len(glob.glob(datadir+'/result*.csv'))
+    
+    gnuplot_add=''
+    for i in range(num):
+        gnuplot_add += ', "result{}.csv" t "" w l lc "gray"'.format(i)
+    
+    # TODO: some better title
+    gnuplot_data = gnuplot_data_template.format(detail_plots=gnuplot_add, title='fitness for dataset '+datadir)
+    
+    stdinname = datadir + '/plot.gpl'
+    
+    with open(stdinname, 'w') as f:
+        f.write(gnuplot_data)
+    
+    with open(stdinname) as stdinf:
+        subprocess.check_call(['gnuplot'], stdin=stdinf, cwd=datadir)

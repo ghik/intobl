@@ -1,3 +1,4 @@
+# TODO: some better format
 [
  ("selector",
   ["GRankSelector", "GRouletteWheel"]),

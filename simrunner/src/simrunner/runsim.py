@@ -9,11 +9,16 @@ import csv
 import os
 import subprocess
 import sys
+import plotsim
 
 script = sys.argv[1]
 config = eval(open(sys.argv[2]).read())
 name = sys.argv[3]
 trials = int(sys.argv[4])
+
+if not os.path.exists(script):
+    print 'Could not find script {}'.format(script)
+    sys.exit(1)
 
 devnull = open('/dev/null', 'w')
 
@@ -21,11 +26,7 @@ def dirname(param):
     (name, value) = param
     return name + '_' + str(value)
 
-def runsim(script, name, trials, parameters):
-    if not os.path.exists(script):
-        print 'Could not find script {}'.format(script)
-        sys.exit(1)
-    
+def prepare_datadir(name, parameters):
     datadir = '/'.join(['data', name] + map(dirname, parameters))
     try:
         os.makedirs(datadir) 
@@ -38,6 +39,10 @@ def runsim(script, name, trials, parameters):
         f.write(str(dict(parameters)))
         f.close()
     
+    return datadir
+
+def runsim(script, datadir, trials):
+    paramsfile = datadir + '/parameters.py' 
     runs = []
     for i in range(trials):
         datafile = datadir + '/result' + str(i) + '.csv'
@@ -67,10 +72,12 @@ def combinations(config):
         yield []
     else:
         (name, values) = config[0]
-        subc = [c for c in combinations(config[1:])]
+        subc = list(combinations(config[1:]))
         for value in values:
             for combination in subc:
                 yield [(name, value)] + combination
                 
 for params in combinations(config):
-    runsim(script, name, trials, params)
+    datadir = prepare_datadir(name, params)
+    runsim(script, datadir, trials)
+    plotsim.plot_results(datadir)
