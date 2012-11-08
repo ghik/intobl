@@ -67,9 +67,10 @@ def combinations(config):
         yield []
     else:
         (name, values) = config[0]
+        subc = [c for c in combinations(config[1:])]
         for value in values:
-            for combination in combinations(config[1:]):
+            for combination in subc:
                 yield [(name, value)] + combination
-
+                
 for params in combinations(config):
     runsim(script, name, trials, params)
