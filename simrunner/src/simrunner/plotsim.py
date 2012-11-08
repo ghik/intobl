@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+'''
+Created on 07-11-2012
+
+@author: admchr
+'''
 
 import glob, sys, subprocess, shutil
 
