@@ -67,8 +67,9 @@ def combinations(config):
         yield []
     else:
         (name, values) = config[0]
+        subc = combinations(config[1:])
         for value in values:
-            for combination in combinations(config[1:]):
+            for combination in subc:
                 yield [(name, value)] + combination
 
 for params in combinations(config):
