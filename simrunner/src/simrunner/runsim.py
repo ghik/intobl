@@ -10,6 +10,11 @@ import os
 import subprocess
 import sys
 
+script = sys.argv[1]
+config = eval(open(sys.argv[2]).read())
+name = sys.argv[3]
+trials = int(sys.argv[4])
+
 devnull = open('/dev/null', 'w')
 
 def dirname(param):
@@ -57,4 +62,14 @@ def runsim(script, name, trials, parameters):
             f.write('{},{},{}\n'.format(i, mean, stddev))
         f.close()
 
-runsim(sys.argv[1], sys.argv[2], int(sys.argv[3]), [])
+def combinations(config):
+    if len(config) == 0:
+        yield []
+    else:
+        (name, values) = config[0]
+        for combination in combinations(config[1:]):
+            for value in values:
+                yield [(name, value)] + combination
+
+for params in combinations(config):
+    runsim(script, name, trials, params)
