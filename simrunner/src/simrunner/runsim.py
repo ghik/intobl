@@ -5,22 +5,12 @@ Created on 07-11-2012
 @author: admchr
 '''
 
-import csv
+from Configuration import Configuration
+from simrunner import plotsim
 import os
 import subprocess
 import sys
-import plotsim
 
-script = sys.argv[1]
-config = eval(open(sys.argv[2]).read())
-name = sys.argv[3]
-trials = int(sys.argv[4])
-
-if not os.path.exists(script):
-    print 'Could not find script {}'.format(script)
-    sys.exit(1)
-
-devnull = open('/dev/null', 'w')
 
 def dirname(param):
     (name, value) = param
@@ -41,43 +31,57 @@ def prepare_datadir(name, parameters):
     
     return datadir
 
-def runsim(script, datadir, trials):
-    paramsfile = datadir + '/parameters.py' 
-    runs = []
-    for i in range(trials):
-        datafile = datadir + '/result' + str(i) + '.csv'
-        subprocess.check_call(['./' + script, paramsfile, datafile], stdout=devnull)
-    
-        with open(datafile) as f:
-            data = csv.reader(f)
-            runs += [[(float(it), float(d)) for it, d in data]]
-            f.close()
-    
-    iterations = len(runs[0])
-    iteration_data = [[] for i in range(iterations)]
-    for i in range(iterations):
-        for run in runs:
-            iteration_data[i].append(run[i][1])
-    
-    with open(datadir + '/summary.csv', 'w') as f:
-        for i, data in enumerate(iteration_data):
-            n = len(data)
-            mean = sum(data) / n
-            stddev = sum((d - mean) ** 2 for d in data) / (n - 1)
-            f.write('{},{},{}\n'.format(i, mean, stddev))
-        f.close()
+paramsFileHeader = """
+from implementation.BaseParameters import BaseParameters
 
-def combinations(config):
-    if len(config) == 0:
+class Parameters(BaseParameters):
+"""
+
+def prepare_parameters_file(script, params):
+    paramsFileContent = paramsFileHeader
+    
+    for param in Configuration.constantParameters:
+        paramsFileContent += "    {} = {}\n".format(param, repr(getattr(Configuration, param)))
+    
+    for param in params:
+        (name, value) = param
+        paramsFileContent += "    {} = {}\n".format(name, repr(value))
+        
+    paramsFileName = os.path.join(os.path.dirname(script), 'implementation/Parameters.py')
+    paramsFile = open(paramsFileName, 'w')
+    paramsFile.write(paramsFileContent)
+    paramsFile.close()
+
+def runsim(script, datadir, trials):
+    for i in range(trials):
+        subprocess.check_call([script], stdout=devnull)
+
+def combinations(paramNames):
+    if len(paramNames) == 0:
         yield []
     else:
-        (name, values) = config[0]
-        subc = list(combinations(config[1:]))
+        name = paramNames[0]
+        values = getattr(Configuration, name)
+        subc = list(combinations(paramNames[1:]))
         for value in values:
             for combination in subc:
                 yield [(name, value)] + combination
-                
-for params in combinations(config):
-    datadir = prepare_datadir(name, params)
-    runsim(script, datadir, trials)
-    plotsim.plot_results(datadir)
+
+if __name__ == "__main__":
+    script = sys.argv[1]
+    name = sys.argv[3]
+    trials = int(sys.argv[4])
+    
+    if not os.path.exists(script):
+        print 'Could not find script {}'.format(script)
+        sys.exit(1)
+    
+    devnull = open('/dev/null', 'w')
+                    
+    for params in combinations(Configuration.changingParameters):
+        datadir = prepare_datadir(name, params)
+        prepare_parameters_file(script, params)
+        runsim(script, datadir, trials)
+        #plotsim.plot_results(datadir)
+    
+

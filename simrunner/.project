@@ -3,6 +3,7 @@
 	<name>simrunner</name>
 	<comment></comment>
 	<projects>
+		<project>symulator</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
