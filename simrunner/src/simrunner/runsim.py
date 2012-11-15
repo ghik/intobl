@@ -5,12 +5,13 @@ Created on 07-11-2012
 @author: admchr
 '''
 
-from Configuration import Configuration
+from simrunner.Configuration import Configuration
 from simrunner import plotsim
 import os
 import subprocess
 import sys
 
+devnull = open('/dev/null', 'w')
 
 def dirname(param):
     (name, value) = param
@@ -67,16 +68,16 @@ def combinations(paramNames):
             for combination in subc:
                 yield [(name, value)] + combination
 
-if __name__ == "__main__":
-    script = sys.argv[1]
-    name = sys.argv[3]
-    trials = int(sys.argv[4])
+
+def run(argv):
+    script = argv[1]
+    name = argv[2]
+    trials = int(argv[3])
     
     if not os.path.exists(script):
         print 'Could not find script {}'.format(script)
         sys.exit(1)
     
-    devnull = open('/dev/null', 'w')
                     
     for params in combinations(Configuration.changingParameters):
         datadir = prepare_datadir(name, params)

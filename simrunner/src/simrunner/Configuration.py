@@ -1,8 +1,8 @@
 
 class Configuration:
     '''Parameters that we want to override, but not include them in reports'''
-    constantParameters = ['algorithm']
-    
+    constantParameters = ['algorithm','monitors']
+    monitors = ['FileCollector']
     algorithm = 'EvolutionarySimulation'
     
     '''Parameters for which we will specify several values and for each combination

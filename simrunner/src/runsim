@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import simrunner.runsim, sys
+
+simrunner.runsim.run(sys.argv)

@@ -12,6 +12,7 @@ from monitor.PopulationCountMonitor import PopulationCountMonitor
 from monitor.ReadyToReproductionMonitor import ReadyToReproductionMonitor
 from monitor.ResultMonitor import ResultMonitor
 from monitor.SimStepsToMakeResultBetterMonitor import SimStepsToMakeResultBetterMonitor
+from monitor.FileCollector import FileCollector
 from monitor.StatsCollector import StatsCollector
 from monitor.ResultMonitor import ResultMonitor
 from monitor.DiversityMonitor import DiversityMonitor
