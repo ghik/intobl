@@ -10,6 +10,7 @@ from simrunner import plotsim
 import os
 import subprocess
 import sys
+import shutil
 
 devnull = open('/dev/null', 'w')
 
@@ -53,9 +54,26 @@ def prepare_parameters_file(script, params):
     paramsFile.write(paramsFileContent)
     paramsFile.close()
 
+def summarize(datadir, trials):
+        
+    runs = []
+    for i in range(trials):
+        fname = datadir+'/result'+str(i)+'.csv'
+    
+        with open(fname) as f:
+            data = csv.reader(f)
+            runs += [[(float(it), float(d)) for it, d in data]]
+    with open(datadir+'/summary.csv', 'w') as f:
+        for i, data in enumerate(iteration_data):
+            n = len(data)
+            mean = sum(data)/n
+            stddev = sum((d-mean)**2 for d in data)/(n-1)
+            f.write('{},{},{}\n'.format(i,mean,stddev))
+
 def runsim(script, datadir, trials):
     for i in range(trials):
         subprocess.check_call([script], stdout=devnull)
+        shutil.move('./stats.txt', datadir+'/result{}.csv'.format(i))
 
 def combinations(paramNames):
     if len(paramNames) == 0:
