@@ -3,6 +3,7 @@ from simulation.GeneticSimulation import GeneticSimulation
 from simulation.EvolutionarySimulation import EvolutionarySimulation
 
 from monitor.AgentStepsCountMonitor import AgentStepsCountMonitor
+from monitor.BestFitnessMonitor import BestFitnessMonitor
 from monitor.CenterOfGravityMonitor import CenterOfGravityMonitor
 from monitor.CenterOfGravityMoveMonitor import CenterOfGravityMoveMonitor
 from monitor.DieAndReproductionMonitor import DieAndReproductionMonitor

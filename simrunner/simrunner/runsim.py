@@ -101,6 +101,6 @@ def run(argv):
         datadir = prepare_datadir(name, params)
         prepare_parameters_file(script, params)
         runsim(script, datadir, trials)
-        #plotsim.plot_results(datadir)
+        plotsim.plot_results(datadir)
     
 
