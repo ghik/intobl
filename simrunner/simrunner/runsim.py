@@ -18,14 +18,14 @@ def dirname(param):
     (name, value) = param
     return name + '_' + str(value)
 
-def prepare_datadir(name, parameters):
-    datadir = '/'.join(['data', name] + map(dirname, parameters))
+def prepare_datadir(name, parameters, overwrite=False):
+    datadir = '/'.join(['datasets', name, 'results'] + map(dirname, parameters))
     try:
         os.makedirs(datadir) 
     except OSError:
-        print 'Dataset with name "{}" for configuration {} already exists'.format(name, parameters)
-        sys.exit(1)
-        
+        if not overwrite:
+            print 'Dataset with name "{}" for configuration {} already exists'.format(name, parameters)
+            sys.exit(1)
     paramsfile = datadir + '/parameters.py'
     with open(paramsfile, 'w') as f:
         f.write(str(dict(parameters)))
@@ -55,16 +55,24 @@ def prepare_parameters_file(script, params):
     paramsFile.close()
 
 def summarize(datadir, trials):
-        
+    import csv
     runs = []
+    iters = []
     for i in range(trials):
         fname = datadir+'/result'+str(i)+'.csv'
     
         with open(fname) as f:
             data = csv.reader(f)
-            runs += [[(float(it), float(d)) for it, d in data]]
+            iter = [(int(it), float(d)) for it, d in data]
+            runs += [iter]
+            if len(iters) == 0:
+                iters = [[] for i in iter]
+            for i, v in iter:
+                iters[i].append(v)
+    
+    
     with open(datadir+'/summary.csv', 'w') as f:
-        for i, data in enumerate(iteration_data):
+        for i, data in enumerate(iters):
             n = len(data)
             mean = sum(data)/n
             stddev = sum((d-mean)**2 for d in data)/(n-1)
@@ -86,21 +94,31 @@ def combinations(paramNames):
             for combination in subc:
                 yield [(name, value)] + combination
 
+def parse_args(argv):
+    import argparse
+    argp = argparse.ArgumentParser(prog='runsim', version="0.1",
+        description='Run simulation multiple times')
+    argp.add_argument('--overwrite', action='store_true', help='force to overwrite earlier simulation data')
+    argp.add_argument('script', help='script of the simulation to be run')
+    argp.add_argument('dataset', help='name of the resulting dataset')
+    argp.add_argument('trials', type=int, help='number of repeats')
+    return argp.parse_args(argv[1:])
 
 def run(argv):
-    script = argv[1]
-    name = argv[2]
-    trials = int(argv[3])
+    args = parse_args(argv)
+    script = args.script
+    name = args.dataset
+    trials = args.trials
     
     if not os.path.exists(script):
         print 'Could not find script {}'.format(script)
         sys.exit(1)
     
-                    
+    
     for params in combinations(Configuration.changingParameters):
-        datadir = prepare_datadir(name, params)
+        datadir = prepare_datadir(name, params, args.overwrite)
         prepare_parameters_file(script, params)
         runsim(script, datadir, trials)
+        summarize(datadir, trials)
         plotsim.plot_results(datadir)
     
-
