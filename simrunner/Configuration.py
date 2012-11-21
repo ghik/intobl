@@ -1,7 +1,7 @@
 class Configuration:
     '''Parameters that we want to override, but not include them in reports'''
     driver='simrunner.pythonplatform'
-    binpath='../symulacja/src/main.py'
+    binpath='../symulator/src/main.py'
     repeats=10
     constantParameters = ['algorithm','monitors']
     monitors = ['FileCollector', 'BestFitnessMonitor']
