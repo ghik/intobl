@@ -54,6 +54,13 @@ def prepare_parameters_file(script, params):
     paramsFile.write(paramsFileContent)
     paramsFile.close()
 
+def compute_mean_stddev(data):
+    n = len(data)
+    mean = sum(data)/n
+    var = sum((d-mean)**2 for d in data)/(n-1)
+    stddev = var**0.5
+    return mean, stddev
+
 def summarize(datadir, trials):
     import csv
     runs = []
@@ -73,9 +80,7 @@ def summarize(datadir, trials):
     
     with open(datadir+'/summary.csv', 'w') as f:
         for i, data in enumerate(iters):
-            n = len(data)
-            mean = sum(data)/n
-            stddev = sum((d-mean)**2 for d in data)/(n-1)
+            mean, stddev = compute_mean_stddev(data)
             f.write('{},{},{}\n'.format(i,mean,stddev))
 
 def runsim(script, datadir, trials):
@@ -93,6 +98,10 @@ def combinations(paramNames):
         for value in values:
             for combination in subc:
                 yield [(name, value)] + combination
+
+def parameters_to_text(params):
+    text = ' '.join('{}={}'.format(k, v) for k, v in params)
+    return text
 
 def parse_args(argv):
     import argparse
@@ -120,5 +129,6 @@ def run(argv):
         prepare_parameters_file(script, params)
         runsim(script, datadir, trials)
         summarize(datadir, trials)
-        plotsim.plot_results(datadir)
+        title = parameters_to_text(params)
+        plotsim.plot_results(datadir, title)
     

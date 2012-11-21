@@ -22,15 +22,15 @@ plot "summary.csv" w errorbars t "average result" {detail_plots}
 
 """
 
-def plot_results(datadir):
+def plot_results(datadir, title):
     num = len(glob.glob(datadir+'/result*.csv'))
     
     gnuplot_add=''
     for i in range(num):
         gnuplot_add += ', "result{}.csv" t "" w l lc "gray"'.format(i)
     
-    # TODO: some better title
-    gnuplot_data = gnuplot_data_template.format(detail_plots=gnuplot_add, title='fitness for dataset '+datadir)
+    
+    gnuplot_data = gnuplot_data_template.format(detail_plots=gnuplot_add, title=title)
     
     stdinname = datadir + '/plot.gpl'
     
