@@ -46,16 +46,22 @@ class Runner:
         module = importlib.import_module(self.config.driver)
         self.driver = module.Driver(self.config)
         
-    def _datadir_path(self, parameters):
+    def datadir_root(self):
+        return 'datasets/'+self.name
+    
+    def datadir_path(self, parameters):
+        return self.datadir_root()+'/'+self.params_path(parameters)
+    
+    def params_path(self, parameters):
         name = self.name
         def dirname(param):
             (name, value) = param
             return name + '_' + str(value)
-        datadir = '/'.join(['datasets', name, 'results'] + map(dirname, parameters))
+        datadir = '/'.join(['results'] + map(dirname, parameters))
         return datadir
     
     def _prepare_datadir(self, name, parameters, overwrite=False):
-        datadir = self._datadir_path(parameters)
+        datadir = self.datadir_path(parameters)
         try:
             os.makedirs(datadir) 
         except OSError:
@@ -103,9 +109,9 @@ class Runner:
         changingparameters = self._changing_parameters()
         parameterspace = self.combinations()
         for params in parameterspace:
-            datadir = self._datadir_path(params)
+            datadir = self.datadir_path(params)
             self._prepare_parameters(params)
             self.driver.run(datadir, params)
             summarize(datadir, self.config.repeats)
-            plotsim.plot_results(params, self._datadir_path)
+        plotsim.plot_results(parameterspace, changingparameters, self)
         

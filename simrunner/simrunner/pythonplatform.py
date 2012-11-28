@@ -1,9 +1,3 @@
-'''
-Created on Nov 21, 2012
-
-@author: admchr
-'''
-
 import subprocess, shutil, os, sys
 
 devnull = open('/dev/null', 'w')
