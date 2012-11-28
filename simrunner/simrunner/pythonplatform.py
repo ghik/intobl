@@ -34,7 +34,6 @@ class Driver:
         paramsFile = open(paramsFileName, 'w')
         paramsFile.write(paramsFileContent)
         paramsFile.close()
-
     
     def run(self, datadir, parameters):
         

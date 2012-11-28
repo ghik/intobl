@@ -36,10 +36,6 @@ def summarize(datadir, trials):
             f.write('{},{},{}\n'.format(i,mean,stddev))
 
 
-def parameters_to_text(params):
-    text = ' '.join('{}={}'.format(k, v) for k, v in params)
-    return text
-
 
 class Runner:
     def __init__(self, configuration):
@@ -73,7 +69,9 @@ class Runner:
         
         return datadir
     
-    def combinations(self, paramNames):
+    def combinations(self, paramNames=None):
+        if paramNames is None:
+            paramNames = self.config.changingParameters
         if len(paramNames) == 0:
             yield []
         else:
@@ -88,17 +86,26 @@ class Runner:
         self.name = name
         self.overwrite = overwrite
     
+    def _changing_parameters(self):
+        l = []
+        paramNames = self.config.changingParameters
+        for p in paramNames:
+            values = getattr(self.config, p)
+            l.append((p, values))
+        l.sort()
+        return l
+    
     def _prepare_parameters(self, parameters):
         self._prepare_datadir(self.name, parameters, self.overwrite)
         self.driver.prepare_parameters(parameters)
         
     def run(self):
-        paramNames = self.config.changingParameters
-        for params in self.combinations(paramNames):
+        changingparameters = self._changing_parameters()
+        parameterspace = self.combinations()
+        for params in parameterspace:
             datadir = self._datadir_path(params)
             self._prepare_parameters(params)
             self.driver.run(datadir, params)
             summarize(datadir, self.config.repeats)
-            title = parameters_to_text(params)
-            plotsim.plot_results(datadir, title)
+            plotsim.plot_results(params, self._datadir_path)
         

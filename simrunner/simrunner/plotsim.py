@@ -8,6 +8,10 @@ Created on 07-11-2012
 import glob
 import subprocess
 
+
+def parameters_to_text(params):
+    text = ' '.join('{}={}'.format(k, v) for k, v in params)
+    return text
 gnuplot_data_template = """
 
 set terminal png
@@ -22,7 +26,9 @@ plot "summary.csv" w errorbars t "average result" {detail_plots}
 
 """
 
-def plot_results(datadir, title):
+def plot_results(params, params_to_path):
+    datadir = params_to_path(params)
+    title = parameters_to_text(params)
     num = len(glob.glob(datadir+'/result*.csv'))
     
     gnuplot_add=''
