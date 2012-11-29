@@ -12,12 +12,22 @@ import subprocess, datetime
 def parameters_to_text(params):
     text = ' '.join('{}={}'.format(k, v) for k, v in params)
     return text
+def parameters_to_id(params):
+    text = '.'.join('{}_{}'.format(k, v) for k, v in params)
+    return text
 
+def replace_param(params, k, v):
+    def toreplace(l):
+        if l[0] == k:
+            return (k, v)
+        return l
+    res = map(toreplace, params)
+    return res
 
-def plot_results(parameterspace, changingparameters, runner):
+def plot_all(changingparameters, runner):
     html_report(runner)
-    for param in parameterspace:
-        plot_result(param, runner.params_to_path)
+    for param in runner.combinations():
+        plot_result(param, runner)
 
 
 html_data_template = """
@@ -45,44 +55,83 @@ def html_report(runner):
             detailed_results=all_results(runner))
         f.write(res)
 
+def links(paramdesc, params):
+    l = []
+    d = dict(params)
+    l.append('<table>\n')
+    for p,vals in paramdesc:
+        l.append('    <tr><td>{}</td><td>'.format(p))
+        lx = []
+        for v in vals:
+            nparams = replace_param(params, p, v)
+            newid = parameters_to_id(nparams)
+            if nparams == params:
+                lx.append('<strong>{}</strong>'.format(v))
+            else:
+                lx.append('<a href="#{}">{}</a>'.format(newid, v))
+        l.append(' | '.join(lx))
+        l.append('</td></tr>\n')
+    l.append('</table>\n')
+    return ''.join(l)
+
 def all_results(runner):
     allparams = runner.combinations()
+    paramdesc = runner.changing_parameters()
     l = []
     for params in allparams:
         path = runner.params_path(params)
-        img='<img src="{path}/graph.png">\n'.format(path=path)
+        l.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
+        link = links(paramdesc, params)
+        img = '<img src="{path}/graph.png">\n<hr>\n'.format(path=path, desc=parameters_to_text(params))
+        l.append(link)
         l.append(img)
     return ''.join(l)
+
+def plot_multiple_results(param_list, outfile):
+    pass
 
 gnuplot_data_template = """
 
 set terminal pngcairo
 set title "{title}"
-set output "graph.png"
+set output "{output}"
 set ylabel 'fitness'
 set xlabel 'iteration'
 set xrange [-1:]
 
 set datafile separator ','
-plot "summary.csv" w errorbars t "average result" {detail_plots}
+{plots}
 
 """
 
-def plot_result(params, params_to_path):
-    datadir = params_to_path(params)
-    title = parameters_to_text(params)
-    num = len(glob.glob(datadir+'/result*.csv'))
+def run_gnuplot(plots, title, output, plotfile):
     
-    gnuplot_add=''
-    for i in range(num):
-        gnuplot_add += ', "result{}.csv" t "" w l lc "gray"'.format(i)
+    gnuplot_data = gnuplot_data_template.format(
+        plots=plots, 
+        title=title,
+        output=output,
+    )
     
-    gnuplot_data = gnuplot_data_template.format(detail_plots=gnuplot_add, title=title)
-    
-    stdinname = datadir + '/plot.gpl'
+    stdinname = plotfile
     
     with open(stdinname, 'w') as f:
         f.write(gnuplot_data)
-    
     with open(stdinname) as stdinf:
-        subprocess.check_call(['gnuplot'], stdin=stdinf, cwd=datadir)
+        subprocess.check_call(['gnuplot'], stdin=stdinf)
+
+
+def plot_result(params, runner):
+    datadir = runner.datadir_path(params)
+    title = parameters_to_text(params)
+    num = len(glob.glob(datadir+'/result*.csv'))
+    
+    gnuplot_add='plot "{}/summary.csv" w errorbars t "average result" '.format(datadir)
+    for i in range(num):
+        gnuplot_add += ', "{}/result{}.csv" t "" w l lc "gray"'.format(datadir, i)
+    run_gnuplot(
+        plots=gnuplot_add,
+        plotfile=datadir + '/plot.gpl', 
+        output='{}/graph.png'.format(datadir), 
+        title=title,
+    )
+    

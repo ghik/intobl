@@ -23,7 +23,7 @@ def parse_to_point(binary_string, minx= -5.0, miny= -5.0, maxx=5.0, maxy=5.0):
     dec = binary_string.getDecimal()
     x = minx + ((dec / bitsegment) / float(bitsegment)) * (maxx - minx)
     y = miny + ((dec % bitsegment) / float(bitsegment)) * (maxy - miny)
-    return [x, y]
+    return (x, y)
 
 def eval_func(individual):
     return 100.0 - rastrigin(numpy.array(parse_to_point(individual)))

@@ -92,7 +92,7 @@ class Runner:
         self.name = name
         self.overwrite = overwrite
     
-    def _changing_parameters(self):
+    def changing_parameters(self):
         l = []
         paramNames = self.config.changingParameters
         for p in paramNames:
@@ -106,12 +106,12 @@ class Runner:
         self.driver.prepare_parameters(parameters)
         
     def run(self):
-        changingparameters = self._changing_parameters()
+        changingparameters = self.changing_parameters()
         parameterspace = self.combinations()
         for params in parameterspace:
             datadir = self.datadir_path(params)
             self._prepare_parameters(params)
             self.driver.run(datadir, params)
             summarize(datadir, self.config.repeats)
-        plotsim.plot_results(parameterspace, changingparameters, self)
+        plotsim.plot_all(changingparameters, self)
         
