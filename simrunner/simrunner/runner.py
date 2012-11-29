@@ -75,7 +75,7 @@ class Runner:
         
         return datadir
     
-    def combinations(self, paramNames=None):
+    def combinations(self, paramNames=None, extend=[]):
         if paramNames is None:
             paramNames = self.config.changingParameters
         if len(paramNames) == 0:
@@ -83,8 +83,8 @@ class Runner:
         else:
             name = paramNames[0]
             values = getattr(self.config, name)
-            subc = list(self.combinations(paramNames[1:]))
-            for value in values:
+            subc = list(self.combinations(paramNames[1:], extend))
+            for value in values + extend:
                 for combination in subc:
                     yield [(name, value)] + combination
     
