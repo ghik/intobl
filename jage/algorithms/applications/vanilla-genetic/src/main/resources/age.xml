@@ -8,7 +8,8 @@
 				<property name="agents">
 					<list>
 						<agent name="agent" class="org.jage.genetic.agent.StatsCollectingAgent" >
-                            <property name="statsFilename" value="results.csv" />
+                            <property name="statsFilename" value="${agent.statsFilename}" />
+                            <property name="steps" value="${steps}" type="Integer"/>
                         </agent>
 					</list>
 				</property>

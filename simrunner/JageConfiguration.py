@@ -1,22 +1,25 @@
 
 class Configuration:
     driver = 'simrunner.jageplatform'
-    execpath = '../../jage/algorithms/applications/vanilla-genetic'
+    execpath = '../jage/algorithms/applications/vanilla-genetic'
+    outfile = 'results.csv'
     repeats = 3
     
     agexml = "classpath:age.xml"
     dotreplacer = '_'
     
-    constantParameters = ['steps', 'problem_size', 'feature_chanceToMutate',
-                          'feature_mutationRange', 'individual_chanceToRecombine']
+    constantParameters = ['agent_statsFilename', 'steps', 'problem_size', 'feature_chanceToMutate',
+                          'feature_mutationRange', 'individual_chanceToMutate']
+    
+    agent_statsFilename = outfile
     
     steps = 1000
     problem_size = 10
     
-    individual_chanceToMutate = 0.5
-    
     feature_chanceToMutate = 0.5
     feature_mutationRange = 0.01
+    
+    individual_chanceToMutate = 0.5
     
     changingParameters = ['population_size', 'individual_chanceToRecombine']
     

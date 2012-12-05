@@ -5,12 +5,6 @@ import sys
 
 devnull = open('/dev/null', 'w')
 
-paramsFileHeader = """
-from implementation.BaseParameters import BaseParameters
-
-class Parameters(BaseParameters):
-"""
-
 class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
@@ -18,14 +12,15 @@ class Driver:
         
     def prepare_parameters(self, params):
         config = self.config
+        dotreplacer = config.dotreplacer
         
         propertiesFileContent = ""
         for param in config.constantParameters:
-            propertiesFileContent += "{} = {}\n".format(param, getattr(config, param))
+            propertiesFileContent += "{} = {}\n".format(param.replace(dotreplacer, '.'), getattr(config, param))
         
         for param in params:
             (name, value) = param
-            propertiesFileContent += "{} = {}\n".format(name, value)
+            propertiesFileContent += "{} = {}\n".format(name.replace(dotreplacer, '.'), value)
             
         propertiesFile = open(self.propertiesPath, 'w')
         propertiesFile.write(propertiesFileContent)
@@ -34,6 +29,7 @@ class Driver:
     def run(self, datadir, parameters):
         agexml = self.config.agexml
         execpath = self.config.execpath
+        outfile = self.config.outfile
 
         cwd = os.getcwd()
         os.chdir(execpath)
@@ -41,10 +37,16 @@ class Driver:
         if not os.path.exists('pom.xml'):
             print 'Could not find pom.xml in {}'.format(execpath)
             sys.exit(1)
+            
+        subprocess.check_call(['mvn', 'package', 'dependency:copy-dependencies'], stdout=devnull)
+            
         for i in range(self.config.repeats):
-            subprocess.check_call(['mvn', 'exec:java', '-Dage.node.conf=' + agexml,
-                                   '-Dage.config.properties=' + self.propertiesPath], stdout=devnull)
-            # shutil.move('./stats.txt', datadir + '/result{}.csv'.format(i))
+            subprocess.check_call(['java', '-cp', 'target/*:target/dependency/*',
+                                   '-Dage.config.properties=' + self.propertiesPath,
+                                   'org.jage.platform.cli.CliNodeBootstrapper',
+                                   '-Dage.node.conf=' + agexml], stdout=devnull)
+            
+            shutil.move(outfile, os.path.join(cwd, datadir, 'result{}.csv'.format(i)))
             
         os.chdir(cwd)
     
