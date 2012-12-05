@@ -6,7 +6,7 @@ Created on 07-11-2012
 '''
 
 import glob
-import subprocess, datetime
+import subprocess, datetime, os.path
 
 
 def parameters_to_text(params):
@@ -15,6 +15,17 @@ def parameters_to_text(params):
 def parameters_to_id(params):
     text = '.'.join('{}_{}'.format(k, v) for k, v in params)
     return text
+
+def param_template(tpl, params):
+    for t, x in zip(tpl, params):
+        if t != x and t[1] != 'all':
+            return False
+    return True
+def is_template(tpl):
+    for t in tpl:
+        if t[1] == 'all':
+            return True
+    return False
 
 def replace_param(params, k, v):
     def toreplace(l):
@@ -29,31 +40,68 @@ def plot_all(changingparameters, runner):
     for param in runner.combinations():
         plot_result(param, runner)
 
-
 html_data_template = """
 <!DOCTYPE html>
 <html>
 <head>
 </head>
 <body>
-<table>
 <h1>simulation run: {dataset_name}</h1>
+<table>
 <tr><td>date:</td><td>{date}</td></tr>
 <tr><td>sample size:</td><td>{samples}</td></tr>
 </table>
+<a href="../../index.html">Dataset list</a>
+<hr>
 {detailed_results}
+<div style="height:800px;width:100px;">.</div>
 </body>
 </html>
 """
 
 def html_report(runner):
+    now = datetime.datetime.now()
+    with open(runner.datadir_root()+'/desc.py','wt') as f:
+        f.write(str(dict(name=runner.name, date=now, samples=runner.config.repeats)))
     with open(runner.datadir_root()+'/index.html', 'wt') as f:
         res = html_data_template.format(
             dataset_name=runner.name, 
-            date=datetime.datetime.now(),
+            date=now,
             samples=runner.config.repeats,
-            detailed_results=all_results(runner))
+            detailed_results=all_results(runner)+all_summaries(runner))
         f.write(res)
+    html_master_page(runner)
+
+html_master_template = """
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<h1>Simulation runs</h1>
+<hr>
+{all_runs}
+</body>
+</html>
+"""
+def html_master_page(runner):
+    with open(runner.global_root()+'/index.html', 'wt') as f:
+        txt = html_master_template.format(all_runs=dataset_list(runner))
+        f.write(txt)
+
+def dataset_list(runner):
+    txt = []
+    txt.append('<table>\n')
+    for d in glob.glob(runner.datadir_global_root()+'/*'):
+        fpath = d+'/desc.py'
+        if os.path.isfile(fpath):
+            with open(fpath, 'rt') as f:
+                desc = eval(f.read())
+                index = d+'/index.html'
+                txt.append('<tr><td><a href="{index}">{name}</a></td><td>{date}</td></tr>\n'.format
+                           (index=index, **desc))
+    txt.append('</table>')
+    return ''.join(txt)
 
 def links(paramdesc, params):
     l = []
@@ -62,7 +110,7 @@ def links(paramdesc, params):
     for p,vals in paramdesc:
         l.append('    <tr><td>{}</td><td>'.format(p))
         lx = []
-        for v in vals:
+        for v in vals + ['all']:
             nparams = replace_param(params, p, v)
             newid = parameters_to_id(nparams)
             if nparams == params:
@@ -74,6 +122,28 @@ def links(paramdesc, params):
     l.append('</table>\n')
     return ''.join(l)
 
+def all_summaries(runner):
+    txt=[]
+    paramdesc = runner.changing_parameters()
+    allparams = list(runner.combinations())
+    allparamsex = list(runner.combinations(extend=['all']))
+    for params in allparamsex:
+        l = []
+        for param2 in allparams:
+            if param_template(params, param2):
+                l.append(param2)
+        if not is_template(params):
+            continue
+        outfile = runner.datadir_root()+'/summary.'+parameters_to_id(params)
+        plot_multiple_results(runner, l, outfile)
+        txt.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
+        link = links(paramdesc, params)
+        img = '<img src="summary.{fname}.png">\n<div><a href="summary.{fname}.gpl">[gnuplot file]</a></div><hr>\n'.format( 
+            fname=parameters_to_id(params), 
+            desc=parameters_to_text(params))
+        txt += [link, img]
+    return ''.join(txt)
+
 def all_results(runner):
     allparams = runner.combinations()
     paramdesc = runner.changing_parameters()
@@ -82,13 +152,27 @@ def all_results(runner):
         path = runner.params_path(params)
         l.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<img src="{path}/graph.png">\n<hr>\n'.format(path=path, desc=parameters_to_text(params))
+        img = '<img src="{path}/graph.png">\n<div><a href="{path}/graph.gpl">[gnuplot file]</a> | <a href="{path}/">[data folder]</a></div><hr>\n'.format(path=path, desc=parameters_to_text(params))
         l.append(link)
         l.append(img)
     return ''.join(l)
 
-def plot_multiple_results(param_list, outfile):
-    pass
+def plot_multiple_results(runner, param_list, outfile):
+    gnuplot_add = 'plot '
+    pl = []
+    for params in param_list:
+        datadir = runner.datadir_path(params)
+        title = parameters_to_text(params)
+        num = len(glob.glob(datadir+'/result*.csv'))
+        pl+=['"{}/summary.csv" w errorbars t "{}" '.format(datadir, title)]
+    gnuplot_add += ', '.join(pl)
+    run_gnuplot(
+        plots=gnuplot_add,
+        plotfile=outfile+'.gpl', 
+        output=outfile+'.png', 
+        title='summary',
+    )
+    
 
 gnuplot_data_template = """
 
@@ -105,7 +189,6 @@ set datafile separator ','
 """
 
 def run_gnuplot(plots, title, output, plotfile):
-    
     gnuplot_data = gnuplot_data_template.format(
         plots=plots, 
         title=title,
@@ -113,24 +196,22 @@ def run_gnuplot(plots, title, output, plotfile):
     )
     
     stdinname = plotfile
-    
     with open(stdinname, 'w') as f:
         f.write(gnuplot_data)
     with open(stdinname) as stdinf:
         subprocess.check_call(['gnuplot'], stdin=stdinf)
 
-
 def plot_result(params, runner):
     datadir = runner.datadir_path(params)
     title = parameters_to_text(params)
     num = len(glob.glob(datadir+'/result*.csv'))
-    
-    gnuplot_add='plot "{}/summary.csv" w errorbars t "average result" '.format(datadir)
+    gnuplot_add = 'plot '
     for i in range(num):
-        gnuplot_add += ', "{}/result{}.csv" t "" w l lc "gray"'.format(datadir, i)
+        gnuplot_add += '"{}/result{}.csv" t "" w l lc rgb "#888888", '.format(datadir, i)
+    gnuplot_add+='"{}/summary.csv" w errorbars t "average result" lc rgb "#ff0000" '.format(datadir)
     run_gnuplot(
         plots=gnuplot_add,
-        plotfile=datadir + '/plot.gpl', 
+        plotfile=datadir + '/graph.gpl', 
         output='{}/graph.png'.format(datadir), 
         title=title,
     )
