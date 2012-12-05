@@ -6,7 +6,7 @@ Created on 07-11-2012
 '''
 
 import glob
-import subprocess, datetime
+import subprocess, datetime, os.path
 
 
 def parameters_to_text(params):
@@ -46,26 +46,62 @@ html_data_template = """
 <head>
 </head>
 <body>
-<table>
 <h1>simulation run: {dataset_name}</h1>
+<table>
 <tr><td>date:</td><td>{date}</td></tr>
 <tr><td>sample size:</td><td>{samples}</td></tr>
 </table>
+<a href="../../index.html">Dataset list</a>
 <hr>
 {detailed_results}
-<div style="height:1000px;width:100px;">.</div>
+<div style="height:800px;width:100px;">.</div>
 </body>
 </html>
 """
 
 def html_report(runner):
+    now = datetime.datetime.now()
+    with open(runner.datadir_root()+'/desc.py','wt') as f:
+        f.write(str(dict(name=runner.name, date=now, samples=runner.config.repeats)))
     with open(runner.datadir_root()+'/index.html', 'wt') as f:
         res = html_data_template.format(
             dataset_name=runner.name, 
-            date=datetime.datetime.now(),
+            date=now,
             samples=runner.config.repeats,
             detailed_results=all_results(runner)+all_summaries(runner))
         f.write(res)
+    html_master_page(runner)
+
+html_master_template = """
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<h1>Simulation runs</h1>
+<hr>
+{all_runs}
+</body>
+</html>
+"""
+def html_master_page(runner):
+    with open(runner.global_root()+'/index.html', 'wt') as f:
+        txt = html_master_template.format(all_runs=dataset_list(runner))
+        f.write(txt)
+
+def dataset_list(runner):
+    txt = []
+    txt.append('<table>\n')
+    for d in glob.glob(runner.datadir_global_root()+'/*'):
+        fpath = d+'/desc.py'
+        if os.path.isfile(fpath):
+            with open(fpath, 'rt') as f:
+                desc = eval(f.read())
+                index = d+'/index.html'
+                txt.append('<tr><td><a href="{index}">{name}</a></td><td>{date}</td></tr>\n'.format
+                           (index=index, **desc))
+    txt.append('</table>')
+    return ''.join(txt)
 
 def links(paramdesc, params):
     l = []
@@ -102,7 +138,7 @@ def all_summaries(runner):
         plot_multiple_results(runner, l, outfile)
         txt.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<img src="summary.{fname}.png">\n<hr>\n'.format( 
+        img = '<img src="summary.{fname}.png">\n<div><a href="summary.{fname}.gpl">[gnuplot file]</a></div><hr>\n'.format( 
             fname=parameters_to_id(params), 
             desc=parameters_to_text(params))
         txt += [link, img]
@@ -116,7 +152,7 @@ def all_results(runner):
         path = runner.params_path(params)
         l.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<img src="{path}/graph.png">\n<hr>\n'.format(path=path, desc=parameters_to_text(params))
+        img = '<img src="{path}/graph.png">\n<div><a href="{path}/graph.gpl">[gnuplot file]</a> | <a href="{path}/">[data folder]</a></div><hr>\n'.format(path=path, desc=parameters_to_text(params))
         l.append(link)
         l.append(img)
     return ''.join(l)
@@ -175,7 +211,7 @@ def plot_result(params, runner):
     gnuplot_add+='"{}/summary.csv" w errorbars t "average result" lc rgb "#ff0000" '.format(datadir)
     run_gnuplot(
         plots=gnuplot_add,
-        plotfile=datadir + '/plot.gpl', 
+        plotfile=datadir + '/graph.gpl', 
         output='{}/graph.png'.format(datadir), 
         title=title,
     )

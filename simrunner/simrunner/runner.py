@@ -49,6 +49,13 @@ class Runner:
     def datadir_root(self):
         return 'datasets/'+self.name
     
+    def datadir_global_root(self):
+        return 'datasets'
+    
+    def global_root(self):
+        return '.'
+
+    
     def datadir_path(self, parameters):
         return self.datadir_root()+'/'+self.params_path(parameters)
     

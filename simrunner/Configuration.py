@@ -6,10 +6,10 @@ class Configuration:
     monitors = ['FileCollector', 'BestFitnessMonitor']
     algorithm = 'EvolutionarySimulation'
     
-    repeats=5
+    repeats=10
     '''Parameters for which we will specify several values and for each combination
        of these values a separate simulation will be run'''
     changingParameters = ['agentCount', 'mutationsType']
     
-    agentCount = [10, 50]
+    agentCount = [10, 50, 100, 200]
     mutationsType = ['continuousDistribution', 'normalDistribution']
