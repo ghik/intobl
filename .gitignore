@@ -6,6 +6,7 @@ simrunner/data
 .classpath
 .project
 
+.idea
 *.iml
 
 *.class
