@@ -57,13 +57,15 @@ import static org.jage.query.ValueSelectors.property;
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
- * Stop condition which stops workplaces when all of them perform fixed steps count. It gets in constructor number of
- * steps after which workplaces are stopped. In no number is given the default value is set.
+ * Stop condition which stops workplaces when all of them perform fixed steps
+ * count. It gets in constructor number of steps after which workplaces are
+ * stopped. In no number is given the default value is set.
  * <p>
- *
- * Important: with the version 2.6 semantics of this stop condition changed: now <emph>all</emph> of workplaces must
- * pass at least the provided number of steps for the computation to stop.
- *
+ * 
+ * Important: with the version 2.6 semantics of this stop condition changed: now
+ * <emph>all</emph> of workplaces must pass at least the provided number of
+ * steps for the computation to stop.
+ * 
  * @author AGH AgE Team
  */
 public class FixedStepCountStopCondition extends AbstractPropertyMonitor implements IStopCondition {
@@ -83,7 +85,8 @@ public class FixedStepCountStopCondition extends AbstractPropertyMonitor impleme
 	private final AtomicBoolean alreadySatisfied = new AtomicBoolean(false);
 
 	/**
-	 * Creates a new step counting condition with the default maximum step count.
+	 * Creates a new step counting condition with the default maximum step
+	 * count.
 	 */
 	@Inject
 	public FixedStepCountStopCondition() {
@@ -91,17 +94,19 @@ public class FixedStepCountStopCondition extends AbstractPropertyMonitor impleme
 	}
 
 	/**
-	 * Creates a new step counting condition with the provided maximum step count.
-	 *
+	 * Creates a new step counting condition with the provided maximum step
+	 * count.
+	 * 
 	 * @param stepCount
-	 *            a number of steps before this stop condition is satisfied, must be greater than zero.
+	 *            a number of steps before this stop condition is satisfied,
+	 *            must be greater than zero.
 	 */
 	@Inject
 	public FixedStepCountStopCondition(final Long stepCount) {
 		if (stepCount != null) {
 			checkArgument(stepCount > 0,
-			        "FixedStepCountStopCondition: number of steps cannot be equal or less then zero. Given value: %s.",
-			        stepCount);
+					"FixedStepCountStopCondition: number of steps cannot be equal or less then zero. Given value: %s.",
+					stepCount);
 			this.stepCount = stepCount;
 		}
 		log.info("Fixed step stop condition created with step set to: {}.", this.stepCount);
@@ -114,7 +119,7 @@ public class FixedStepCountStopCondition extends AbstractPropertyMonitor impleme
 		try {
 			for (final Workplace<?> workplace : workplaceManager.getWorkplaces()) {
 				workplace.getProperty(SimpleWorkplace.STEP_PROPERTY_NAME).addMonitor(this,
-				        new DefaultPropertyMonitorRule());
+						new DefaultPropertyMonitorRule());
 			}
 		} catch (final InvalidPropertyOperationException e) {
 			log.error("Step property is set to read-only while it shouldn't", e);
@@ -149,7 +154,7 @@ public class FixedStepCountStopCondition extends AbstractPropertyMonitor impleme
 	protected void propertyChanged(final PropertyEvent event) {
 		final Object value = event.getProperty().getValue();
 		checkArgument(value instanceof Long, "Wrong property type. Should be long, but actual type is %s.",
-		        value.getClass());
+				value.getClass());
 
 		if (!alreadySatisfied.get() && shouldStop()) {
 			log.info("The stop condition has been satisfied.");
@@ -165,10 +170,10 @@ public class FixedStepCountStopCondition extends AbstractPropertyMonitor impleme
 
 	private boolean shouldStop() {
 		final PropertyContainerCollectionQuery<Workplace, Long> query = new PropertyContainerCollectionQuery<Workplace, Long>(
-		        Workplace.class);
+				Workplace.class);
 
 		final Collection<Long> results = query.matching(SimpleWorkplace.STEP_PROPERTY_NAME, lessThan(stepCount))
-		        .select(property(SimpleWorkplace.STEP_PROPERTY_NAME)).execute(workplaceManager.getWorkplaces());
+				.select(property(SimpleWorkplace.STEP_PROPERTY_NAME)).execute(workplaceManager.getWorkplaces());
 		return results.isEmpty();
 	}
 

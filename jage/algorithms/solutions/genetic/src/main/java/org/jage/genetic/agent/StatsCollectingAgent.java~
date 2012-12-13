@@ -1,0 +1,76 @@
+package org.jage.genetic.agent;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.inject.Inject;
+
+import org.jage.address.agent.AgentAddress;
+import org.jage.address.agent.AgentAddressSupplier;
+import org.jage.platform.component.exception.ComponentException;
+import org.jage.population.IPopulation;
+import org.jage.solution.ISolution;
+
+import com.google.common.base.Joiner;
+
+/**
+ * Created with IntelliJ IDEA. User: ghik Date: 04.12.12 Time: 23:24 To change
+ * this template use File | Settings | File Templates.
+ */
+public class StatsCollectingAgent extends GeneticActionDrivenAgent {
+	private static final Joiner JOINER = Joiner.on(',');
+
+	private String statsFilename;
+
+	private PrintWriter statsWriter;
+
+	public StatsCollectingAgent(final AgentAddress address) {
+		super(address);
+	}
+
+	@Inject
+	public StatsCollectingAgent(final AgentAddressSupplier supplier) {
+		super(supplier);
+	}
+
+	public void setStatsFilename(String statsFilename) {
+		this.statsFilename = statsFilename;
+	}
+
+	@Override
+	public void init() throws ComponentException {
+		try {
+			super.init();
+			System.out.println(new File(statsFilename).getAbsolutePath());
+			statsWriter = new PrintWriter(statsFilename);
+		} catch (IOException e) {
+			throw new ComponentException(e);
+		}
+	}
+
+	@Override
+	public boolean finish() throws ComponentException {
+		statsWriter.close();
+		return super.finish();
+	}
+
+	@Override
+	public void step() {
+		super.step();
+		long step = (Long) getProperty(Properties.STEP).getValue();
+
+		@SuppressWarnings("unchecked")
+		IPopulation.Tuple<ISolution, ?> solutionTuple = (IPopulation.Tuple<ISolution, ?>) getProperty(
+				Properties.BEST_EVER).getValue();
+
+		Object evaluation = null;
+		if (solutionTuple != null) {
+			evaluation = solutionTuple.getEvaluation();
+		}
+
+		if (evaluation != null) {
+			statsWriter.println(JOINER.join(step, evaluation));
+		}
+	}
+}

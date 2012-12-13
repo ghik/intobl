@@ -21,6 +21,10 @@
   	<logger name="org.jage.action">
     	<level value="info"/>
   	</logger>
+    
+    <logger name="org.jage.workplace.manager.DefaultWorkplaceManager">
+        <level value="debug" />
+    </logger>
 
 	<root>
 		<priority value="info" />
