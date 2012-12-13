@@ -25,10 +25,11 @@
  * along with AgE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.jage.workplace;
+package org.jage.emas.util;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.io.PrintStream;
 
 import javax.inject.Inject;
@@ -42,6 +43,8 @@ import org.jage.property.InvalidPropertyPathException;
 import org.jage.property.monitors.AbstractPropertyMonitor;
 import org.jage.property.monitors.DefaultPropertyMonitorRule;
 import org.jage.services.core.LifecycleManager;
+import org.jage.workplace.SimpleWorkplace;
+import org.jage.workplace.Workplace;
 import org.jage.workplace.manager.WorkplaceManager;
 
 public class BestFitnessTracer extends AbstractPropertyMonitor implements IStatefulComponent {
@@ -85,7 +88,7 @@ public class BestFitnessTracer extends AbstractPropertyMonitor implements IState
 
 		long step = (Long) value;
 		if (step <= steps) {
-			ps.printf("%s,%s\n", step, bestFitness);
+			ps.printf("%s,%s\n", step - 1, bestFitness);
 		}
 	}
 
@@ -112,6 +115,7 @@ public class BestFitnessTracer extends AbstractPropertyMonitor implements IState
 	@Override
 	public boolean finish() throws ComponentException {
 		try {
+			System.out.println(new File(filename).getAbsolutePath());
 			ps.close();
 		} catch (Exception e) {
 			throw new ComponentException(e);

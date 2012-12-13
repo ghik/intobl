@@ -10,6 +10,19 @@ class Driver:
         self.config = global_configuration
         self.propertiesPath = '/tmp/age.properties'
         
+    def setup(self):
+        execpath = self.config.execpath
+        
+        cwd = os.getcwd()
+        os.chdir(execpath)
+        
+        if not os.path.exists('pom.xml'):
+            print 'Could not find pom.xml in {}'.format(execpath)
+            sys.exit(1)
+            
+        subprocess.check_call(['mvn', 'package', 'dependency:copy-dependencies'], stdout=devnull)
+        os.chdir(cwd)
+        
     def prepare_parameters(self, params):
         config = self.config
         dotreplacer = config.dotreplacer
@@ -33,18 +46,12 @@ class Driver:
 
         cwd = os.getcwd()
         os.chdir(execpath)
-        
-        if not os.path.exists('pom.xml'):
-            print 'Could not find pom.xml in {}'.format(execpath)
-            sys.exit(1)
-            
-        subprocess.check_call(['mvn', 'package', 'dependency:copy-dependencies'], stdout=devnull)
             
         for i in range(self.config.repeats):
             subprocess.check_call(['java', '-cp', 'target/*:target/dependency/*',
                                    '-Dage.config.properties=' + self.propertiesPath,
                                    'org.jage.platform.cli.CliNodeBootstrapper',
-                                   '-Dage.node.conf=' + agexml], stdout=devnull)
+                                   '-Dage.node.conf=' + agexml])
             
             shutil.move(outfile, os.path.join(cwd, datadir, 'result{}.csv'.format(i)))
             

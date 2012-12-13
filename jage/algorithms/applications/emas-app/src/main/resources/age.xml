@@ -108,8 +108,8 @@
 			<property name="mutationRange" type="Double" value="${feature.mutationRange}"/>
 		</strategy>
     
-        <component name="bestFitnessTracer" class="org.jage.workplace.BestFitnessTracer" >
-            <property name="filename" value="${filename}" />
+        <component name="bestFitnessTracer" class="org.jage.emas.util.BestFitnessTracer" >
+            <property name="filename" value="${outfile}" />
             <property name="steps" type="Long" value="${steps}" />
         </component>
 	</block>

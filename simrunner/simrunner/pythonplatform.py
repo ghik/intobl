@@ -12,6 +12,8 @@ class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
         
+    def setup(self):
+        pass
 
     def prepare_parameters(self, params):
         paramsFileContent = paramsFileHeader

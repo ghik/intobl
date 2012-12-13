@@ -35,8 +35,8 @@ import javax.inject.Inject;
 
 import org.jage.agent.AgentException;
 import org.jage.emas.agent.DefaultIslandAgent;
+import org.jage.emas.util.BestFitnessTracer;
 import org.jage.emas.util.ChainingAction;
-import org.jage.workplace.BestFitnessTracer;
 
 /**
  * This action handler performs statistics update actions on island agents. It

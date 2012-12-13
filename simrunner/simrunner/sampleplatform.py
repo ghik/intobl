@@ -5,6 +5,8 @@ class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
         
+    def setup(self):
+        pass
 
     def prepare_parameters(self, params):
         self.params = params
@@ -19,7 +21,7 @@ class Driver:
                 print 'Could not find script {}'.format(script)
                 sys.exit(1)
             for i in range(self.config.repeats):
-                outfile = datadir+'/result{}.csv'.format(i)
+                outfile = datadir + '/result{}.csv'.format(i)
                 paramfile = f.name
                 subprocess.check_call([script, paramfile, outfile], stdout=devnull)
 

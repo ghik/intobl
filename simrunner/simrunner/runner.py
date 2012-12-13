@@ -115,6 +115,7 @@ class Runner:
     def run(self):
         changingparameters = self.changing_parameters()
         parameterspace = self.combinations()
+        self.driver.setup()
         for params in parameterspace:
             datadir = self.datadir_path(params)
             self._prepare_parameters(params)
