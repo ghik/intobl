@@ -61,14 +61,14 @@ html_data_template = """
 
 def html_report(runner):
     now = datetime.datetime.now()
-    with open(runner.datadir_root()+'/desc.py','wt') as f:
+    with open(runner.datadir_root() + '/desc.py', 'wt') as f:
         f.write(str(dict(name=runner.name, date=now, samples=runner.config.repeats)))
-    with open(runner.datadir_root()+'/index.html', 'wt') as f:
+    with open(runner.datadir_root() + '/index.html', 'wt') as f:
         res = html_data_template.format(
-            dataset_name=runner.name, 
+            dataset_name=runner.name,
             date=now,
             samples=runner.config.repeats,
-            detailed_results=all_results(runner)+all_summaries(runner))
+            detailed_results=all_results(runner) + all_summaries(runner))
         f.write(res)
     html_master_page(runner)
 
@@ -85,19 +85,19 @@ html_master_template = """
 </html>
 """
 def html_master_page(runner):
-    with open(runner.global_root()+'/index.html', 'wt') as f:
+    with open(runner.global_root() + '/index.html', 'wt') as f:
         txt = html_master_template.format(all_runs=dataset_list(runner))
         f.write(txt)
 
 def dataset_list(runner):
     txt = []
     txt.append('<table>\n')
-    for d in glob.glob(runner.datadir_global_root()+'/*'):
-        fpath = d+'/desc.py'
+    for d in glob.glob(runner.datadir_global_root() + '/*'):
+        fpath = d + '/desc.py'
         if os.path.isfile(fpath):
             with open(fpath, 'rt') as f:
                 desc = eval(f.read())
-                index = d+'/index.html'
+                index = d + '/index.html'
                 txt.append('<tr><td><a href="{index}">{name}</a></td><td>{date}</td></tr>\n'.format
                            (index=index, **desc))
     txt.append('</table>')
@@ -107,7 +107,7 @@ def links(paramdesc, params):
     l = []
     d = dict(params)
     l.append('<table>\n')
-    for p,vals in paramdesc:
+    for p, vals in paramdesc:
         l.append('    <tr><td>{}</td><td>'.format(p))
         lx = []
         for v in vals + ['all']:
@@ -123,7 +123,7 @@ def links(paramdesc, params):
     return ''.join(l)
 
 def all_summaries(runner):
-    txt=[]
+    txt = []
     paramdesc = runner.changing_parameters()
     allparams = list(runner.combinations())
     allparamsex = list(runner.combinations(extend=['all']))
@@ -134,12 +134,12 @@ def all_summaries(runner):
                 l.append(param2)
         if not is_template(params):
             continue
-        outfile = runner.datadir_root()+'/summary.'+parameters_to_id(params)
+        outfile = runner.datadir_root() + '/summary.' + parameters_to_id(params)
         plot_multiple_results(runner, l, outfile)
         txt.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<img src="summary.{fname}.png">\n<div><a href="summary.{fname}.gpl">[gnuplot file]</a></div><hr>\n'.format( 
-            fname=parameters_to_id(params), 
+        img = '<a href="summary.{fname}.pdf"><img src="summary.{fname}.png"></a>\n<div><a href="summary.{fname}.gpl">[gnuplot file]</a></div><hr>\n'.format(
+            fname=parameters_to_id(params),
             desc=parameters_to_text(params))
         txt += [link, img]
     return ''.join(txt)
@@ -152,7 +152,7 @@ def all_results(runner):
         path = runner.params_path(params)
         l.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<img src="{path}/graph.png">\n<div><a href="{path}/graph.gpl">[gnuplot file]</a> | <a href="{path}/">[data folder]</a></div><hr>\n'.format(path=path, desc=parameters_to_text(params))
+        img = '<a href="{path}/graph.pdf"><img src="{path}/graph.png"></a>\n<div><a href="{path}/graph.gpl">[gnuplot file]</a> | <a href="{path}/">[data folder]</a></div><hr>\n'.format(path=path, desc=parameters_to_text(params))
         l.append(link)
         l.append(img)
     return ''.join(l)
@@ -163,34 +163,39 @@ def plot_multiple_results(runner, param_list, outfile):
     for params in param_list:
         datadir = runner.datadir_path(params)
         title = parameters_to_text(params)
-        num = len(glob.glob(datadir+'/result*.csv'))
-        pl+=['"{}/summary.csv" w errorbars t "{}" '.format(datadir, title)]
+        num = len(glob.glob(datadir + '/result*.csv'))
+        pl += ['"{}/summary.csv" w errorbars t "{}" '.format(datadir, title)]
     gnuplot_add += ', '.join(pl)
     run_gnuplot(
         plots=gnuplot_add,
-        plotfile=outfile+'.gpl', 
-        output=outfile+'.png', 
+        plotfile=outfile + '.gpl',
+        output=outfile,
         title='summary',
     )
     
 
 gnuplot_data_template = """
 
-set terminal pngcairo
 set title "{title}"
-set output "{output}"
 set ylabel 'fitness'
 set xlabel 'iteration'
 set xrange [-1:]
 
 set datafile separator ','
+
+set terminal pngcairo
+set output "{output}.png"
+{plots}
+
+set terminal pdfcairo
+set output "{output}.pdf"
 {plots}
 
 """
 
 def run_gnuplot(plots, title, output, plotfile):
     gnuplot_data = gnuplot_data_template.format(
-        plots=plots, 
+        plots=plots,
         title=title,
         output=output,
     )
@@ -204,15 +209,15 @@ def run_gnuplot(plots, title, output, plotfile):
 def plot_result(params, runner):
     datadir = runner.datadir_path(params)
     title = parameters_to_text(params)
-    num = len(glob.glob(datadir+'/result*.csv'))
+    num = len(glob.glob(datadir + '/result*.csv'))
     gnuplot_add = 'plot '
     for i in range(num):
         gnuplot_add += '"{}/result{}.csv" t "" w l lc rgb "#888888", '.format(datadir, i)
-    gnuplot_add+='"{}/summary.csv" w errorbars t "average result" lc rgb "#ff0000" '.format(datadir)
+    gnuplot_add += '"{}/summary.csv" w errorbars t "average result" lc rgb "#ff0000" '.format(datadir)
     run_gnuplot(
         plots=gnuplot_add,
-        plotfile=datadir + '/graph.gpl', 
-        output='{}/graph.png'.format(datadir), 
+        plotfile=datadir + '/graph.gpl',
+        output='{}/graph'.format(datadir),
         title=title,
     )
     
