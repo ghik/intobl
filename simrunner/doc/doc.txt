@@ -1,0 +1,77 @@
+= Skrypt automatyzujący masowe uruchamianie symulacji
+Roman Janusz <roman@student.agh.edu.pl>, Adam Chrabąszcz <admchr@student.agh.edu.pl>
+
+== Informacje ogólne ==
+
+Skrypt do masowego uruchamiania symulacji został zaimplementowany w celu zautomatyzowania uruchamiania
+i generowania raportów symulacji przy użyciu platform takich jak np. jAgE. Jest to projekt w Pythonie,
+zaimplementowany przy użyciu środowiska Eclipse PyDev.
+
+== Podstawowa dokumentacja użytkownika ==
+
+=== Uruchamianie ===
+
+Skryptem startowym projektu jest plik +simrunner.py+:
+
+----
+python simrunner.py configFile datasetName+
+----
+
+Parametry:
+
+ * +configFile+ - plik konfiguracyjny - definiuje w jaki sposób wykonywać symulacje, dla jakich parametrów i na jakiej platformie.
+   Jest to specjalna klasa w Pythonie (opisana dalej)
+ * +datasetName+ - nazwa katalogu, do którego zostaną zapisane wyniki symulacji (wewnątrz katalogu nadrzędnego +datasets+)
+
+Po wykonaniu symulacji wyniki można znaleźć w katalogu +datasets/_datasetName_+ (raport HTML w pliku +index.html+).
+
+=== Plik konfiguracyjny ===
+
+Plik konfiguracyjny definiuje:
+
+ * Platformę, która ma zostać użyta do symulacji poprzez wskazanie modułu pythona, w którym zaimplementowany jest sterownik danej platformy
+ * Specyficzne parametry dla sterownika platformy
+ * Podstawowe parametry uruchamiania (np. liczba uruchomień dla takiego samego zestawu parametrów)
+ * Stałe parametry symulacji wraz z wartościami
+ * Zmienne parametry symulacji wraz z listą wartości dla każdego z nich
+
+
+Plik konfiguracyjny jest specjalną klasą w Pythonie. Przykładowy plik konfiguracyjny dla zmodyfikowanej aplikacji EMAS na platformie jAgE:
+
+----
+class Configuration:
+    driver = 'simrunner.jageplatform'
+    
+    execpath = '../jage/algorithms/applications/emas-app'
+    agexml = "classpath:age.xml"
+    dotreplacer = '_'
+    
+    repeats = 3
+    
+    constantParameters = ['outfile', 'steps', 'problem_size', 'islands_number', 'individual_chanceToMigrate']
+    
+    outfile = 'results.csv'
+    steps = 1000
+    problem_size = 10
+    islands_number = 5
+    individual_chanceToMigrate = 0.001
+    
+    changingParameters = ['islands_size', 'feature_chanceToMutate', 'feature_mutationRange']
+    
+    islands_size = [5, 10, 50]
+    feature_chanceToMutate = [0.2, 0.4, 0.6, 0.8]
+    feature_mutationRange = [0.0125, 0.025, 0.05, 0.1]
+
+----
+
+W powyższym pliku:
+
+ * +driver+ definiuje moduł, w którym zaimplementowany jest sterownik platformy
+ * +execpath+, +agexml+, +dotreplacer+ to specyficzne parametry platformy, interpretowane przez sterownik
+ * +repeats+ definiuje liczbę uruchomień symulatora dla pojedynczego zestawu parametrów
+ * +constantParameters+ definiuje listę nazw stałych parametrów symulacji. Dla każdego z nich konkretna wartość jest podana dalej w pliku konfiguracyjnym.
+ * +changingParameters+ definiuje listę nazw zmieniających się parametrów symulacji. Dla każdego z nich lista możliwych wartości podana jest dalej w pliku konfiguracyjnym.
+
+Symulacja zostanie uruchomiona dla każdej możliwej kombinacji wartości zmieniających się parametrów. Dla konkretnego zestawu wartości zostanie ona uruchomiona +repeats+ razy.
+
+== Dokumentacja deweloperska ==

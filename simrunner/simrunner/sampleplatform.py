@@ -8,8 +8,8 @@ class Driver:
     def setup(self):
         pass
 
-    def prepare_parameters(self, params):
-        self.params = params
+    def prepare_parameters(self, changingParams):
+        self.params = changingParams
     
     def run(self, datadir, parameters):
         with tempfile.NamedTemporaryFile('wt') as f:

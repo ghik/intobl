@@ -1,19 +1,19 @@
 
 class Configuration:
     driver = 'simrunner.jageplatform'
-    execpath = '../jage/algorithms/applications/emas-app'
-    outfile = 'results.csv'
-    repeats = 3
     
+    execpath = '../jage/algorithms/applications/emas-app'
     agexml = "classpath:age.xml"
     dotreplacer = '_'
     
+    repeats = 3
+    
     constantParameters = ['outfile', 'steps', 'problem_size', 'islands_number', 'individual_chanceToMigrate']
     
+    outfile = 'results.csv'
     steps = 1000
     problem_size = 10
     islands_number = 5
-    
     individual_chanceToMigrate = 0.001
     
     changingParameters = ['islands_size', 'feature_chanceToMutate', 'feature_mutationRange']

@@ -23,7 +23,7 @@ class Driver:
         subprocess.check_call(['mvn', 'package', 'dependency:copy-dependencies'], stdout=devnull)
         os.chdir(cwd)
         
-    def prepare_parameters(self, params):
+    def prepare_parameters(self, changingParams):
         config = self.config
         dotreplacer = config.dotreplacer
         
@@ -31,7 +31,7 @@ class Driver:
         for param in config.constantParameters:
             propertiesFileContent += "{} = {}\n".format(param.replace(dotreplacer, '.'), getattr(config, param))
         
-        for param in params:
+        for param in changingParams:
             (name, value) = param
             propertiesFileContent += "{} = {}\n".format(name.replace(dotreplacer, '.'), value)
             

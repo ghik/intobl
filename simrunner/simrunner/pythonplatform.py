@@ -15,14 +15,14 @@ class Driver:
     def setup(self):
         pass
 
-    def prepare_parameters(self, params):
+    def prepare_parameters(self, changingParams):
         paramsFileContent = paramsFileHeader
         config = self.config
         script = config.binpath
         for param in config.constantParameters:
             paramsFileContent += "    {} = {}\n".format(param, repr(getattr(config, param)))
         
-        for param in params:
+        for param in changingParams:
             (name, value) = param
             paramsFileContent += "    {} = {}\n".format(name, repr(value))
             
