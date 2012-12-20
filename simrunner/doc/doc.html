@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.6" />
+<meta name="generator" content="AsciiDoc 8.6.7" />
 <title>Skrypt automatyzujący masowe uruchamianie symulacji</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -349,7 +349,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -407,6 +407,8 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
+div.unbreakable { page-break-inside: avoid; }
+
 
 /*
  * xhtml11 specific
@@ -414,7 +416,7 @@ span.line-through { text-decoration: line-through; }
  * */
 
 tt {
-  font-family: monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: inherit;
   color: navy;
 }
@@ -453,7 +455,7 @@ div.tableblock > table[frame="vsides"] {
  * */
 
 .monospaced {
-  font-family: monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: inherit;
   color: navy;
 }
@@ -581,7 +583,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -610,7 +612,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName == 'div'
+    if (entry.nodeName.toLowerCase() == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -656,7 +658,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -755,7 +757,7 @@ zaimplementowany przy użyciu środowiska Eclipse PyDev.</p></div>
 <div class="paragraph"><p>Skryptem startowym projektu jest plik <tt>simrunner.py</tt>:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>python simrunner.py configFile datasetName+</tt></pre>
+<pre><tt>python simrunner.py [--overwrite] configFile datasetName</tt></pre>
 </div></div>
 <div class="paragraph"><p>Parametry:</p></div>
 <div class="ulist"><ul>
@@ -768,6 +770,14 @@ zaimplementowany przy użyciu środowiska Eclipse PyDev.</p></div>
 <li>
 <p>
 <tt>datasetName</tt> - nazwa katalogu, do którego zostaną zapisane wyniki symulacji (wewnątrz katalogu nadrzędnego <tt>datasets</tt>)
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>Opcje:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<tt>--overwrite</tt> - jeśli zbiór <tt>datasetName</tt> już istnieje, to zastąp go nowymi danymi
 </p>
 </li>
 </ul></div>
@@ -862,15 +872,77 @@ Zmienne parametry symulacji wraz z listą wartości dla każdego z nich
 </div>
 </div>
 <div class="sect1">
+<h2 id="_dostępne_sterowniki_platformy">Dostępne sterowniki platformy</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_simrunner_jageplatform">simrunner.jageplatform</h3>
+<div class="paragraph"><p>Platforma jAgE jest środowiskiem projektowania i uruchamiania ewolucyjnych symulacji wieloagentowych zapimplementowanym w języku Java. Do poprawnego działania wymagana jest wersja platformy z zaimplementowanym modułem agregacji danych (dołączona do kodu projektu). Przed pierwszym uruchomieniem platformy należy ją skompilować, uruchamiając w katalogu <tt>jage/</tt> komendę <tt>mvn install</tt>. Przykładowa konfiguracja, włączająca parametry niezbędne do poprawnego uruchomienia znajduje się w pliku <tt>simrunner/JageConfiguration.py</tt>.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_simrunner_pythonplatform">simrunner.pythonplatform</h3>
+<div class="paragraph"><p>Platforma pythonowa symuluje dynamikę populacyjną w oparciu o model spotkaniowy. Do poprawnego działania wymagana jest wersja platformy z zaimplementowanym modułem agregacji danych (dołączona do kodu projektu). Przykładowa konfiguracja, włączająca parametry niezbędne do poprawnego uruchomienia znajduje się w pliku <tt>simrunner/Configuration.py</tt>.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_dokumentacja_deweloperska">Dokumentacja deweloperska</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_dodawanie_nowych_platform_uruchomieniowych">Dodawanie nowych platform uruchomieniowych</h3>
+<div class="paragraph"><p>Obsługa platform jest realizowana za pomocą klas pythonowych. Jeśli w konfiguracji znajduje się linia:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>    driver = 'simrunner.jageplatform'</tt></pre>
+</div></div>
+<div class="paragraph"><p>oznacza to, że za obsługę platformy jest odpowiedzialna klasa o nazwie <tt>Driver</tt> znajdująca się w module <tt>simrunner.jageplatform</tt>. Aby dodać sterownik innej platformy symulacyjnej, należy stworzyć moduł pythonowy, w którym ma znajdować się klasa zgodna z interfejsem:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>class Driver:
+    def __init__(self, global_configuration):
+        ...
+    def setup(self):
+        ...
+    def prepare_parameters(self, changingParams):
+        ...
+    def run(self, datadir, changingParams):
+        ...</tt></pre>
+</div></div>
+<div class="paragraph"><p>Protokół użytkowania sterownika wygląda następująco:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+W momencie konstrukcji sterownik dostaje referencję do klasy będącej konfiguracją w parametrze <tt>global_configuration</tt>.
+</p>
+</li>
+<li>
+<p>
+Metoda <tt>setup</tt> jest wywoływana jednokrotnie przed uruchomieniem zbioru symulacji i może być użyta do przygotowania środowiska.
+</p>
+</li>
+<li>
+<p>
+Metody <tt>prepare_parameters</tt> i <tt>run</tt> wywoływane są wielkorotnie, dla każdej wartości wektora parametrów zmiennych.
+</p>
+</li>
+<li>
+<p>
+Metoda <tt>prepare_parameters</tt> jest wołana przed wykonaniem metody <tt>run</tt>. W parametrze <tt>changingParams</tt> znajduje się lista parametrów zmieniających się, w formacie <tt>[(nazwa1, wartość1), (nazwa2, wartość2), &#8230;]</tt>. Metoda ma za zadanie przygotować konfigurację środowiska dla danych parametrów.
+</p>
+</li>
+<li>
+<p>
+Metoda <tt>run</tt> uruchamia symulację ilość razy zapisaną w <tt>global_configuration.repeats</tt>. W parametrze <tt>datadir</tt> znajduje się ścieżka, do której mają być zapisywane pliki wyjściowe symulacji. Pliki wyjściowe z poszczególnych uruchomień mają mieć nazwy <tt>result0.csv, result1.csv, &#8230;</tt> i mają zawierać: w pierwszj kolumnie numer iteracji (zaczynając od 0), w drugiej wartość fitness. Kolumny mają być oddzielone przecinkami.
+</p>
+</li>
+</ul></div>
+</div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2012-12-19 23:26:15 CET
+Last updated 2012-12-20 13:43:36 CET
 </div>
 </div>
 </body>

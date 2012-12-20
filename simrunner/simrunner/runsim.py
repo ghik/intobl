@@ -11,7 +11,7 @@ def parse_args(argv):
     import argparse
     argp = argparse.ArgumentParser(prog='runsim', version="0.1",
         description='Run simulation multiple times')
-    argp.add_argument('--overwrite', action='store_true', help='force to overwrite earlier simulation data')
+    argp.add_argument('--overwrite', action='store_true', help='force overwriting of earlier simulation data')
     argp.add_argument('script', help='script of the simulation to be run')
     argp.add_argument('dataset', help='name of the resulting dataset')
     return argp.parse_args(argv[1:])

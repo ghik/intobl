@@ -14,7 +14,7 @@ zaimplementowany przy użyciu środowiska Eclipse PyDev.
 Skryptem startowym projektu jest plik +simrunner.py+:
 
 ----
-python simrunner.py configFile datasetName+
+python simrunner.py [--overwrite] configFile datasetName
 ----
 
 Parametry:
@@ -22,6 +22,10 @@ Parametry:
  * +configFile+ - plik konfiguracyjny - definiuje w jaki sposób wykonywać symulacje, dla jakich parametrów i na jakiej platformie.
    Jest to specjalna klasa w Pythonie (opisana dalej)
  * +datasetName+ - nazwa katalogu, do którego zostaną zapisane wyniki symulacji (wewnątrz katalogu nadrzędnego +datasets+)
+
+Opcje:
+
+ * +--overwrite+ - jeśli zbiór +datasetName+ już istnieje, to zastąp go nowymi danymi
 
 Po wykonaniu symulacji wyniki można znaleźć w katalogu +datasets/_datasetName_+ (raport HTML w pliku +index.html+).
 
@@ -74,4 +78,44 @@ W powyższym pliku:
 
 Symulacja zostanie uruchomiona dla każdej możliwej kombinacji wartości zmieniających się parametrów. Dla konkretnego zestawu wartości zostanie ona uruchomiona +repeats+ razy.
 
+== Dostępne sterowniki platformy ==
+
+=== simrunner.jageplatform ===
+
+Platforma jAgE jest środowiskiem projektowania i uruchamiania ewolucyjnych symulacji wieloagentowych zapimplementowanym w języku Java. Do poprawnego działania wymagana jest wersja platformy z zaimplementowanym modułem agregacji danych (dołączona do kodu projektu). Przed pierwszym uruchomieniem platformy należy ją skompilować, uruchamiając w katalogu +jage/+ komendę +mvn install+. Przykładowa konfiguracja, włączająca parametry niezbędne do poprawnego uruchomienia znajduje się w pliku +simrunner/JageConfiguration.py+.
+
+=== simrunner.pythonplatform ===
+
+Platforma pythonowa symuluje dynamikę populacyjną w oparciu o model spotkaniowy. Do poprawnego działania wymagana jest wersja platformy z zaimplementowanym modułem agregacji danych (dołączona do kodu projektu). Przykładowa konfiguracja, włączająca parametry niezbędne do poprawnego uruchomienia znajduje się w pliku +simrunner/Configuration.py+.
+
 == Dokumentacja deweloperska ==
+
+=== Dodawanie nowych platform uruchomieniowych ===
+
+Obsługa platform jest realizowana za pomocą klas pythonowych. Jeśli w konfiguracji znajduje się linia:
+
+----
+    driver = 'simrunner.jageplatform'
+----
+
+oznacza to, że za obsługę platformy jest odpowiedzialna klasa o nazwie +Driver+ znajdująca się w module +simrunner.jageplatform+. Aby dodać sterownik innej platformy symulacyjnej, należy stworzyć moduł pythonowy, w którym ma znajdować się klasa zgodna z interfejsem:
+
+----
+
+class Driver:
+    def __init__(self, global_configuration):
+        ...
+    def setup(self):
+        ...
+    def prepare_parameters(self, changingParams):
+        ...
+    def run(self, datadir, changingParams):
+        ...
+----
+Protokół użytkowania sterownika wygląda następująco:
+
+ * W momencie konstrukcji sterownik dostaje referencję do klasy będącej konfiguracją w parametrze +global_configuration+. 
+ * Metoda +setup+ jest wywoływana jednokrotnie przed uruchomieniem zbioru symulacji i może być użyta do przygotowania środowiska. 
+ * Metody +prepare_parameters+ i +run+ wywoływane są wielkorotnie, dla każdej wartości wektora parametrów zmiennych.
+ * Metoda +prepare_parameters+ jest wołana przed wykonaniem metody +run+. W parametrze +changingParams+ znajduje się lista parametrów zmieniających się, w formacie +[(nazwa1, wartość1), (nazwa2, wartość2), ...]+. Metoda ma za zadanie przygotować konfigurację środowiska dla danych parametrów.
+ * Metoda +run+ uruchamia symulację ilość razy zapisaną w +global_configuration.repeats+. W parametrze +datadir+ znajduje się ścieżka, do której mają być zapisywane pliki wyjściowe symulacji. Pliki wyjściowe z poszczególnych uruchomień mają mieć nazwy +result0.csv, result1.csv, ...+ i mają zawierać: w pierwszj kolumnie numer iteracji (zaczynając od 0), w drugiej wartość fitness. Kolumny mają być oddzielone przecinkami.
