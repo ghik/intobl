@@ -48,7 +48,7 @@ html_data_template = """
 <body>
 <h1>simulation run: {dataset_name}</h1>
 <table>
-<tr><td>date:</td><td>{date}</td></tr>
+<tr><td>date:</td><td>{date:%Y-%m-%d %H:%M:%S}</td></tr>
 <tr><td>sample size:</td><td>{samples}</td></tr>
 </table>
 <a href="../../index.html">Dataset list</a>
@@ -76,6 +76,19 @@ html_master_template = """
 <!DOCTYPE html>
 <html>
 <head>
+<style type="text/css">
+
+th {{
+    background: #00f;
+    color: #fff;
+}}
+th, td {{
+    padding: 2px;
+}}
+tr:nth-child(even) {{
+    background: #ddd;
+}}
+</style> 
 </head>
 <body>
 <h1>Simulation runs</h1>
@@ -92,13 +105,14 @@ def html_master_page(runner):
 def dataset_list(runner):
     txt = []
     txt.append('<table>\n')
+    txt.append('<tr><th>dataset name</th><th>date</th></tr>')
     for d in glob.glob(runner.datadir_global_root() + '/*'):
         fpath = d + '/desc.py'
         if os.path.isfile(fpath):
             with open(fpath, 'rt') as f:
                 desc = eval(f.read())
                 index = d + '/index.html'
-                txt.append('<tr><td><a href="{index}">{name}</a></td><td>{date}</td></tr>\n'.format
+                txt.append('<tr><td><a href="{index}">{name}</a></td><td>{date:%Y-%m-%d %H:%M}</td></tr>\n'.format
                            (index=index, **desc))
     txt.append('</table>')
     return ''.join(txt)
