@@ -19,7 +19,7 @@ def summarize(datadir, trials):
     runs = []
     iters = []
     for i in range(trials):
-        fname = datadir+'/result'+str(i)+'.csv'
+        fname = datadir+'/result.fitness.'+str(i)+'.csv'
     
         with open(fname) as f:
             data = csv.reader(f)
@@ -30,7 +30,7 @@ def summarize(datadir, trials):
             for i, v in iter:
                 iters[i].append(v)
     
-    with open(datadir+'/summary.csv', 'w') as f:
+    with open(datadir+'/summary.fitness.csv', 'w') as f:
         for i, data in enumerate(iters):
             mean, stddev = compute_mean_stddev(data)
             f.write('{},{},{}\n'.format(i,mean,stddev))

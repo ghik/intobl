@@ -8,6 +8,7 @@ Created on 07-11-2012
 import glob
 import subprocess, datetime, os.path
 
+result = 'fitness'
 
 def parameters_to_text(params):
     text = ' '.join('{}={}'.format(k, v) for k, v in params)
@@ -106,7 +107,7 @@ def dataset_list(runner):
     txt = []
     txt.append('<table>\n')
     txt.append('<tr><th>dataset name</th><th>date</th></tr>')
-    for d in glob.glob(runner.datadir_global_root() + '/*'):
+    for d in sorted(glob.glob(runner.datadir_global_root() + '/*')):
         fpath = d + '/desc.py'
         if os.path.isfile(fpath):
             with open(fpath, 'rt') as f:
@@ -148,12 +149,13 @@ def all_summaries(runner):
                 l.append(param2)
         if not is_template(params):
             continue
-        outfile = runner.datadir_root() + '/summary.' + parameters_to_id(params)
+        outfile = '{}/summary.{}.{}'.format(runner.datadir_root(), result, parameters_to_id(params))
         plot_multiple_results(runner, l, outfile)
         txt.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<a href="summary.{fname}.pdf"><img src="summary.{fname}.png"></a>\n<div><a href="summary.{fname}.gpl">[gnuplot file]</a></div><hr>\n'.format(
+        img = '<a href="summary.{datatype}.{fname}.pdf"><img src="summary.{datatype}.{fname}.png"></a>\n<div><a href="summary.{datatype}.{fname}.gpl">[gnuplot file]</a></div><hr>\n'.format(
             fname=parameters_to_id(params),
+            datatype=result,
             desc=parameters_to_text(params))
         txt += [link, img]
     return ''.join(txt)
@@ -166,7 +168,7 @@ def all_results(runner):
         path = runner.params_path(params)
         l.append('<a id="{}"></a>\n'.format(parameters_to_id(params)))
         link = links(paramdesc, params)
-        img = '<a href="{path}/graph.pdf"><img src="{path}/graph.png"></a>\n<div><a href="{path}/graph.gpl">[gnuplot file]</a> | <a href="{path}/">[data folder]</a></div><hr>\n'.format(path=path, desc=parameters_to_text(params))
+        img = '<a href="{path}/graph.{datatype}.pdf"><img src="{path}/graph.{datatype}.png"></a>\n<div><a href="{path}/graph.{datatype}.gpl">[gnuplot file]</a> | <a href="{path}/">[data folder]</a></div><hr>\n'.format(path=path, desc=parameters_to_text(params), datatype=result)
         l.append(link)
         l.append(img)
     return ''.join(l)
@@ -177,12 +179,11 @@ def plot_multiple_results(runner, param_list, outfile):
     for params in param_list:
         datadir = runner.datadir_path(params)
         title = parameters_to_text(params)
-        num = len(glob.glob(datadir + '/result*.csv'))
-        pl += ['"{}/summary.csv" w errorbars t "{}" '.format(datadir, title)]
+        num = len(glob.glob('{datadir}/result.{datatype}.*.csv'.format(datadir=datadir, datatype=result)))
+        pl += ['"{}/summary.{}.csv" w errorbars t "{}" '.format(datadir, result, title)]
     gnuplot_add += ', '.join(pl)
     run_gnuplot(
         plots=gnuplot_add,
-        plotfile=outfile + '.gpl',
         output=outfile,
         title='summary',
     )
@@ -207,14 +208,14 @@ set output "{output}.pdf"
 
 """
 
-def run_gnuplot(plots, title, output, plotfile):
+def run_gnuplot(plots, title, output):
     gnuplot_data = gnuplot_data_template.format(
         plots=plots,
         title=title,
         output=output,
     )
     
-    stdinname = plotfile
+    stdinname = output + '.gpl'
     with open(stdinname, 'w') as f:
         f.write(gnuplot_data)
     with open(stdinname) as stdinf:
@@ -223,15 +224,14 @@ def run_gnuplot(plots, title, output, plotfile):
 def plot_result(params, runner):
     datadir = runner.datadir_path(params)
     title = parameters_to_text(params)
-    num = len(glob.glob(datadir + '/result*.csv'))
+    num = len(glob.glob('{datadir}/result.{datatype}.*.csv'.format(datadir=datadir, datatype=result)))
     gnuplot_add = 'plot '
     for i in range(num):
-        gnuplot_add += '"{}/result{}.csv" t "" w l lc rgb "#888888", '.format(datadir, i)
-    gnuplot_add += '"{}/summary.csv" w errorbars t "average result" lc rgb "#ff0000" '.format(datadir)
+        gnuplot_add += '"{datadir}/result.{datatype}.{i}.csv" t "" w l lc rgb "#888888", '.format(datadir=datadir, i=i, datatype=result)
+    gnuplot_add += '"{datadir}/summary.{datatype}.csv" w errorbars t "average result" lc rgb "#ff0000" '.format(datadir=datadir, datatype=result)
     run_gnuplot(
         plots=gnuplot_add,
-        plotfile=datadir + '/graph.gpl',
-        output='{}/graph'.format(datadir),
+        output='{datadir}/graph.{datatype}'.format(datadir=datadir, datatype=result),
         title=title,
     )
     

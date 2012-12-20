@@ -40,5 +40,5 @@ class Driver:
             sys.exit(1)
         for i in range(self.config.repeats):
             subprocess.check_call([script], stdout=devnull)
-            shutil.move('./stats.txt', datadir+'/result{}.csv'.format(i))
+            shutil.move('./stats.txt', datadir+'/result.fitness.{}.csv'.format(i))
     

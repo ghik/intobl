@@ -53,7 +53,7 @@ class Driver:
                                    'org.jage.platform.cli.CliNodeBootstrapper',
                                    '-Dage.node.conf=' + agexml])
             
-            shutil.move(outfile, os.path.join(cwd, datadir, 'result{}.csv'.format(i)))
+            shutil.move(outfile, os.path.join(cwd, datadir, 'result.fitness.{}.csv'.format(i)))
             
         os.chdir(cwd)
     

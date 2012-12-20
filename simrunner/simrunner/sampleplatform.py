@@ -21,7 +21,7 @@ class Driver:
                 print 'Could not find script {}'.format(script)
                 sys.exit(1)
             for i in range(self.config.repeats):
-                outfile = datadir + '/result{}.csv'.format(i)
+                outfile = datadir + '/result.fitness.{}.csv'.format(i)
                 paramfile = f.name
                 subprocess.check_call([script, paramfile, outfile], stdout=devnull)
 
