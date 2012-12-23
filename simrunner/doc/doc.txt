@@ -11,10 +11,10 @@ zaimplementowany przy użyciu środowiska Eclipse PyDev.
 
 === Uruchamianie ===
 
-Skryptem startowym projektu jest plik +simrunner.py+:
+Skryptem startowym projektu jest plik +runsim+ z katalogu +simrunner/+:
 
 ----
-python simrunner.py [--overwrite] configFile datasetName
+./runsim [--overwrite] configFile datasetName
 ----
 
 Parametry:
@@ -25,7 +25,7 @@ Parametry:
 
 Opcje:
 
- * +--overwrite+ - jeśli zbiór +datasetName+ już istnieje, to zastąp go nowymi danymi
+ * +--overwrite+ - jeśli zbiór +datasetName+ już istnieje, to zastąp go nowym
 
 Po wykonaniu symulacji wyniki można znaleźć w katalogu +datasets/_datasetName_+ (raport HTML w pliku +index.html+).
 
@@ -38,6 +38,7 @@ Plik konfiguracyjny definiuje:
  * Podstawowe parametry uruchamiania (np. liczba uruchomień dla takiego samego zestawu parametrów)
  * Stałe parametry symulacji wraz z wartościami
  * Zmienne parametry symulacji wraz z listą wartości dla każdego z nich
+ * Ilość uruchomień symulacji dla każdej konfiguracji parametrów
 
 
 Plik konfiguracyjny jest specjalną klasą w Pythonie. Przykładowy plik konfiguracyjny dla zmodyfikowanej aplikacji EMAS na platformie jAgE:

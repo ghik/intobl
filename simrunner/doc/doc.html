@@ -754,10 +754,10 @@ zaimplementowany przy użyciu środowiska Eclipse PyDev.</p></div>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_uruchamianie">Uruchamianie</h3>
-<div class="paragraph"><p>Skryptem startowym projektu jest plik <tt>simrunner.py</tt>:</p></div>
+<div class="paragraph"><p>Skryptem startowym projektu jest plik <tt>runsim</tt> z katalogu <tt>simrunner/</tt>:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>python simrunner.py [--overwrite] configFile datasetName</tt></pre>
+<pre><tt>./runsim [--overwrite] configFile datasetName</tt></pre>
 </div></div>
 <div class="paragraph"><p>Parametry:</p></div>
 <div class="ulist"><ul>
@@ -777,7 +777,7 @@ zaimplementowany przy użyciu środowiska Eclipse PyDev.</p></div>
 <div class="ulist"><ul>
 <li>
 <p>
-<tt>--overwrite</tt> - jeśli zbiór <tt>datasetName</tt> już istnieje, to zastąp go nowymi danymi
+<tt>--overwrite</tt> - jeśli zbiór <tt>datasetName</tt> już istnieje, to zastąp go nowym
 </p>
 </li>
 </ul></div>
@@ -810,6 +810,11 @@ Stałe parametry symulacji wraz z wartościami
 <li>
 <p>
 Zmienne parametry symulacji wraz z listą wartości dla każdego z nich
+</p>
+</li>
+<li>
+<p>
+Ilość uruchomień symulacji dla każdej konfiguracji parametrów
 </p>
 </li>
 </ul></div>
@@ -942,7 +947,7 @@ Metoda <tt>run</tt> uruchamia symulację ilość razy zapisaną w <tt>global_con
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2012-12-20 13:43:36 CET
+Last updated 2012-12-20 17:20:37 CET
 </div>
 </div>
 </body>
