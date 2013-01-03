@@ -4,7 +4,8 @@ devnull = open('/dev/null', 'w')
 class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
-        
+        self.outputs = dict(avgfitness='average fitness', maxfitness='maximum fitness')
+    
     def setup(self):
         pass
 
@@ -21,7 +22,8 @@ class Driver:
                 print 'Could not find script {}'.format(script)
                 sys.exit(1)
             for i in range(self.config.repeats):
-                outfile = datadir + '/result.fitness.{}.csv'.format(i)
+                outfilemax = '{}/result.maxfitness.{}.csv'.format(datadir, i)
+                outfileavg = '{}/result.avgfitness.{}.csv'.format(datadir, i)
                 paramfile = f.name
-                subprocess.check_call([script, paramfile, outfile], stdout=devnull)
+                subprocess.check_call([script, paramfile, outfilemax, outfileavg], stdout=devnull)
 

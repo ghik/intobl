@@ -14,12 +14,12 @@ def compute_mean_stddev(data):
     stddev = var**0.5
     return mean, stddev
 
-def summarize(datadir, trials):
+def summarize(datadir, result, trials):
     import csv
     runs = []
     iters = []
     for i in range(trials):
-        fname = datadir+'/result.fitness.'+str(i)+'.csv'
+        fname = '{}/result.{}.{}.csv'.format(datadir, result, i)
     
         with open(fname) as f:
             data = csv.reader(f)
@@ -30,12 +30,10 @@ def summarize(datadir, trials):
             for i, v in iter:
                 iters[i].append(v)
     
-    with open(datadir+'/summary.fitness.csv', 'w') as f:
+    with open('{}/summary.{}.csv'.format(datadir, result), 'w') as f:
         for i, data in enumerate(iters):
             mean, stddev = compute_mean_stddev(data)
             f.write('{},{},{}\n'.format(i,mean,stddev))
-
-
 
 class Runner:
     def __init__(self, configuration):
@@ -54,7 +52,6 @@ class Runner:
     
     def global_root(self):
         return '.'
-
     
     def datadir_path(self, parameters):
         return self.datadir_root()+'/'+self.params_path(parameters)
@@ -99,6 +96,24 @@ class Runner:
         self.name = name
         self.overwrite = overwrite
     
+    @property
+    def outputs(self):
+        return self.driver.outputs
+    
+    @property
+    def constant_parameters(self):
+        l = []
+        try:
+            paramNames = self.config.constantParameters
+        except AttributeError:
+            return []
+        for p in paramNames:
+            values = getattr(self.config, p)
+            l.append((p, values))
+        l.sort()
+        return l
+    
+    @property
     def changing_parameters(self):
         l = []
         paramNames = self.config.changingParameters
@@ -113,13 +128,14 @@ class Runner:
         self.driver.prepare_parameters(parameters)
         
     def run(self):
-        changingparameters = self.changing_parameters()
+        changingparameters = self.changing_parameters
         parameterspace = self.combinations()
         self.driver.setup()
         for params in parameterspace:
             datadir = self.datadir_path(params)
             self._prepare_parameters(params)
             self.driver.run(datadir, params)
-            summarize(datadir, self.config.repeats)
+            for result in self.outputs:
+                summarize(datadir, result, self.config.repeats)
         plotsim.plot_all(changingparameters, self)
         
