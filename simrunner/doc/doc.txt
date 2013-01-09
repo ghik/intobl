@@ -120,3 +120,11 @@ Protokół użytkowania sterownika wygląda następująco:
  * Metody +prepare_parameters+ i +run+ wywoływane są wielkorotnie, dla każdej wartości wektora parametrów zmiennych.
  * Metoda +prepare_parameters+ jest wołana przed wykonaniem metody +run+. W parametrze +changingParams+ znajduje się lista parametrów zmieniających się, w formacie +[(nazwa1, wartość1), (nazwa2, wartość2), ...]+. Metoda ma za zadanie przygotować konfigurację środowiska dla danych parametrów.
  * Metoda +run+ uruchamia symulację ilość razy zapisaną w +global_configuration.repeats+. W parametrze +datadir+ znajduje się ścieżka, do której mają być zapisywane pliki wyjściowe symulacji. Pliki wyjściowe z poszczególnych uruchomień mają mieć nazwy +result0.csv, result1.csv, ...+ i mają zawierać: w pierwszj kolumnie numer iteracji (zaczynając od 0), w drugiej wartość fitness. Kolumny mają być oddzielone przecinkami.
+
+=== Poglądowe diagramy ===
+
+image::classes.png[]
+
+image::sequence.png[]
+
+
