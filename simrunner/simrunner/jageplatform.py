@@ -9,6 +9,7 @@ class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
         self.propertiesPath = '/tmp/age.properties'
+        self.outputs = dict(fitness='fitness', )
         
     def setup(self):
         execpath = self.config.execpath

@@ -57,15 +57,34 @@ html_data_template = """
 <!DOCTYPE html>
 <html>
 <head>
+<style type="text/css">
+table.dataset-desc th {{
+    text-align: right;
+    font-weight: normal;
+    padding-right: 7px;
+}}
+table.dataset-desc td {{
+    font-weight: bold;
+}}
+
+.action-button {{
+    color: #fff;
+    background-color: #00f;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 2px;
+}}
+
+</style>
 </head>
 <body>
 <h1>simulation run: {dataset_name}</h1>
-<table>
-<tr><td>date:</td><td>{date:%Y-%m-%d %H:%M:%S}</td></tr>
-<tr><td>sample size:</td><td>{samples}</td></tr>
-<tr><td>common parameters:</td><td>{parameters}</td></tr>
+<table class="dataset-desc">
+<tr><th>date:</th><td>{date:%Y-%m-%d %H:%M:%S}</td></tr>
+<tr><th>sample size:</th><td>{samples}</td></tr>
+<tr><th>common parameters:</th><td>{parameters}</td></tr>
 </table>
-<a href="../../index.html">Dataset list</a>
+<div><a class="action-button" href="../../index.html">&laquo; Dataset list</a></div>
 <hr>
 {detailed_results}
 <div style="height:800px;width:100px;">.</div>

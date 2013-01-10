@@ -105,6 +105,7 @@ oznacza to, że za obsługę platformy jest odpowiedzialna klasa o nazwie +Drive
 
 class Driver:
     def __init__(self, global_configuration):
+        self.outputs = dict(fitness='average fitness', ...)
         ...
     def setup(self):
         ...
@@ -119,12 +120,17 @@ Protokół użytkowania sterownika wygląda następująco:
  * Metoda +setup+ jest wywoływana jednokrotnie przed uruchomieniem zbioru symulacji i może być użyta do przygotowania środowiska. 
  * Metody +prepare_parameters+ i +run+ wywoływane są wielkorotnie, dla każdej wartości wektora parametrów zmiennych.
  * Metoda +prepare_parameters+ jest wołana przed wykonaniem metody +run+. W parametrze +changingParams+ znajduje się lista parametrów zmieniających się, w formacie +[(nazwa1, wartość1), (nazwa2, wartość2), ...]+. Metoda ma za zadanie przygotować konfigurację środowiska dla danych parametrów.
- * Metoda +run+ uruchamia symulację ilość razy zapisaną w +global_configuration.repeats+. W parametrze +datadir+ znajduje się ścieżka, do której mają być zapisywane pliki wyjściowe symulacji. Pliki wyjściowe z poszczególnych uruchomień mają mieć nazwy +result0.csv, result1.csv, ...+ i mają zawierać: w pierwszj kolumnie numer iteracji (zaczynając od 0), w drugiej wartość fitness. Kolumny mają być oddzielone przecinkami.
+ * Pole +outputs+ jest czytane, by określić nazwy parametrów wyjściowych, które generuje aplikacja. Klucze w słowniku służą do tworzenia nazw plików wyjściowych, wartości są opisami słownymi wykorzystywanymi do generowania wykresów.
+ * Metoda +run+ uruchamia symulację ilość razy zapisaną w +global_configuration.repeats+. W parametrze +datadir+ znajduje się ścieżka, do której mają być zapisywane pliki wyjściowe symulacji. Pliki wyjściowe mają być w formacie +result.<param>.<i>.csv+, gdzie +<param>+ oznacza nazwę klucza parametru wyjściowego zgodnego z polem +outputs+ a +<i>+ to kolejne wykonanie symulacji (liczone od 0). Pliki mają zawierać: w pierwszj kolumnie numer iteracji (zaczynając od 0), w drugiej wartość parametru wyjściowego +<param>+. Kolumny mają być oddzielone przecinkami.
 
-=== Poglądowe diagramy ===
+=== Diagram klas ===
 
-image::classes.png[]
+image:classes.png["Class Diagram"]
 
-image::sequence.png[]
+Wejściem do programu jest funkcja +run+ z modułu +simrunner.runsim+, która tłumaczy argumenty linii komend na parametry klasy +Runner+. Klasa +Runner+ zajmuje się zarządzaniem procesem uruchamiania i raportowania wyników symulacji. Komunikacją z poszczególnymi platformami symulacyjnymi zajmują się klasy +Driver+ instancjonowane przez klasę +Runner+.
 
+=== Diagram sekwencji ===
 
+image:sequence.png["Sequence Diagram"]
+
+Diagram opisuje sekwencję pojedynczego uruchomienia programu uruchamiającego symulacje.

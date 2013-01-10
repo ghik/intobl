@@ -11,9 +11,10 @@ class Parameters(BaseParameters):
 class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
+        self.outputs = dict(fitness='fitness', )
         
     def setup(self):
-        pass
+        pass 
 
     def prepare_parameters(self, changingParams):
         paramsFileContent = paramsFileHeader
