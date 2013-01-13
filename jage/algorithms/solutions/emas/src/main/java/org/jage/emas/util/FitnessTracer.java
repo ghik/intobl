@@ -53,9 +53,9 @@ public class FitnessTracer extends AbstractPropertyMonitor implements IStatefulC
 	private long steps;
 	private String filename;
 
-	private double bestFitness = Double.MIN_VALUE;
-	private double averageFitness = Double.MIN_VALUE;
-	private double averageEnergy = Double.MIN_VALUE;
+	private double bestFitness = -Double.MAX_VALUE;
+	private double averageFitness = -Double.MAX_VALUE;
+	private double averageEnergy = -Double.MAX_VALUE;
 
 	@Inject
 	private LifecycleManager lifecycleManager;
@@ -74,9 +74,9 @@ public class FitnessTracer extends AbstractPropertyMonitor implements IStatefulC
 	}
 
 	public synchronized void updateParameters(DefaultIslandAgent agent) {
-		bestFitness = Math.max(bestFitness, agent.getBestFitnessEver());
-		averageFitness = Math.max(averageFitness, agent.getAvgFitness());
-		averageEnergy = Math.max(averageEnergy, agent.getAvgChildEnergy());
+		bestFitness = agent.getBestFitnessEver();
+		averageFitness = agent.getAvgFitness();
+		averageEnergy = agent.getAvgChildEnergy();
 	}
 
 	@Override
