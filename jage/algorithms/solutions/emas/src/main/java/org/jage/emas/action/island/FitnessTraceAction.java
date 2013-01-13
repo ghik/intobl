@@ -35,7 +35,7 @@ import javax.inject.Inject;
 
 import org.jage.agent.AgentException;
 import org.jage.emas.agent.DefaultIslandAgent;
-import org.jage.emas.util.BestFitnessTracer;
+import org.jage.emas.util.FitnessTracer;
 import org.jage.emas.util.ChainingAction;
 
 /**
@@ -47,14 +47,14 @@ import org.jage.emas.util.ChainingAction;
 public final class FitnessTraceAction extends ChainingAction<DefaultIslandAgent> {
 
 	@Inject
-	private BestFitnessTracer bestFitnessTracer;
+	private FitnessTracer fitnessTracer;
 
-	public void setBestFitnessTracer(BestFitnessTracer bestFitnessTracer) {
-		this.bestFitnessTracer = bestFitnessTracer;
+	public void setFitnessTracer(FitnessTracer fitnessTracer) {
+		this.fitnessTracer = fitnessTracer;
 	}
 
 	@Override
 	public void doPerform(final DefaultIslandAgent agent) throws AgentException {
-		bestFitnessTracer.updateBestFitness(agent.getBestFitnessEver());
+		fitnessTracer.updateParameters(agent);
 	}
 }

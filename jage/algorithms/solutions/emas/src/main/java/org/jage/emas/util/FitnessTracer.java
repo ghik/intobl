@@ -34,6 +34,7 @@ import java.io.PrintStream;
 
 import javax.inject.Inject;
 
+import org.jage.emas.agent.DefaultIslandAgent;
 import org.jage.event.AbstractEvent;
 import org.jage.event.PropertyEvent;
 import org.jage.platform.component.IStatefulComponent;
@@ -47,12 +48,14 @@ import org.jage.workplace.SimpleWorkplace;
 import org.jage.workplace.Workplace;
 import org.jage.workplace.manager.WorkplaceManager;
 
-public class BestFitnessTracer extends AbstractPropertyMonitor implements IStatefulComponent {
+public class FitnessTracer extends AbstractPropertyMonitor implements IStatefulComponent {
 
 	private long steps;
 	private String filename;
 
-	private volatile double bestFitness = -Double.MAX_VALUE;
+	private double bestFitness = Double.MIN_VALUE;
+	private double averageFitness = Double.MIN_VALUE;
+	private double averageEnergy = Double.MIN_VALUE;
 
 	@Inject
 	private LifecycleManager lifecycleManager;
@@ -70,10 +73,10 @@ public class BestFitnessTracer extends AbstractPropertyMonitor implements IState
 		this.filename = filename;
 	}
 
-	public void updateBestFitness(double islandBestFitness) {
-		if (islandBestFitness > bestFitness) {
-			bestFitness = islandBestFitness;
-		}
+	public synchronized void updateParameters(DefaultIslandAgent agent) {
+		bestFitness = Math.max(bestFitness, agent.getBestFitnessEver());
+		averageFitness = Math.max(averageFitness, agent.getAvgFitness());
+		averageEnergy = Math.max(averageEnergy, agent.getAvgChildEnergy());
 	}
 
 	@Override
@@ -81,14 +84,14 @@ public class BestFitnessTracer extends AbstractPropertyMonitor implements IState
 	}
 
 	@Override
-	protected void propertyChanged(PropertyEvent event) {
+	protected synchronized void propertyChanged(PropertyEvent event) {
 		final Object value = event.getProperty().getValue();
 		checkArgument(value instanceof Long, "Wrong property type. Should be long, but actual type is %s.",
 				value.getClass());
 
 		long step = (Long) value;
 		if (step <= steps) {
-			ps.printf("%s,%s\n", step - 1, bestFitness);
+			ps.printf("%s,%s,%s,%s\n", step - 1, bestFitness, averageFitness, averageEnergy);
 		}
 	}
 
@@ -107,6 +110,7 @@ public class BestFitnessTracer extends AbstractPropertyMonitor implements IState
 
 		try {
 			ps = new PrintStream(filename);
+			ps.print("steps,bestFitnessEver,avgFitness,avgChildEnergy\n");
 		} catch (Exception e) {
 			throw new ComponentException(e);
 		}

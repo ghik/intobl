@@ -1,7 +1,4 @@
-import os
-import shutil
-import subprocess
-import sys
+import os, subprocess, sys, csv
 
 devnull = open('/dev/null', 'w')
 
@@ -9,7 +6,7 @@ class Driver:
     def __init__(self, global_configuration):
         self.config = global_configuration
         self.propertiesPath = '/tmp/age.properties'
-        self.outputs = dict(fitness='fitness', )
+        self.outputs = dict(maxfitness='maxfitness', avgfitness='avgfitness')
         
     def setup(self):
         execpath = self.config.execpath
@@ -40,6 +37,24 @@ class Driver:
         propertiesFile.write(propertiesFileContent)
         propertiesFile.close()
     
+    def decode_output(self, outfile, datadir, i):
+        keys = 'maxfitness,avgfitness,avgenergy'.split(',')
+        files = {}
+        for key in keys:
+            files[key] = open(os.path.join(datadir, 'result.{}.{}.csv'.format(key, i)), 'wt')
+        
+        with open(outfile, 'rt') as f:
+            results = csv.reader(f)
+            fieldnames = results.next() 
+            assert fieldnames == 'steps,bestFitnessEver,avgFitness,avgChildEnergy'.split(','), fieldnames
+            for r in results:
+                res = {}
+                num, res['maxfitness'], res['avgfitness'], res['avgenergy'] = r
+                for key in keys:
+                    files[key].write('{},{}\n'.format(num, res[key]))
+        for key in keys:
+            files[key].close() 
+    
     def run(self, datadir, parameters):
         agexml = self.config.agexml
         execpath = self.config.execpath
@@ -52,9 +67,9 @@ class Driver:
             subprocess.check_call(['java', '-cp', 'target/*:target/dependency/*',
                                    '-Dage.config.properties=' + self.propertiesPath,
                                    'org.jage.platform.cli.CliNodeBootstrapper',
-                                   '-Dage.node.conf=' + agexml])
+                                   '-Dage.node.conf=' + agexml])#, stdout=devnull)
             
-            shutil.move(outfile, os.path.join(cwd, datadir, 'result.fitness.{}.csv'.format(i)))
+            self.decode_output(outfile, os.path.join(cwd, datadir), i)
             
         os.chdir(cwd)
     
