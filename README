@@ -1,1 +1,6 @@
 Inteligencja Obliczeniowa
+
+Projekt zawiera:
+ - simrunner -  narzędzie do nadzorowania wielokrotnego uruchamiania symulacji (główna część projektu)
+ - symulator - silnik symulacji napisany w Pythonie (wersja zmodyfikowana do współpracy z nadzorcą)
+ - jage - silnik symulacji w Javie (wersja zmodyfikowana do współpracy z nadzorcą)
